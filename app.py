@@ -19,7 +19,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. SÉCURITÉ & PROTECTION (ANTI-TRICHE JS) ---
+# --- 2. SÉCURITÉ & PROTECTION (OPTIMISÉE) ---
 st.components.v1.html("""
     <script>
     document.addEventListener('contextmenu', event => event.preventDefault());
@@ -51,7 +51,8 @@ st.components.v1.html("""
         }
     });
 
-    setInterval(killSecurityButton, 400);
+    // Fréquence réduite pour améliorer la fluidité (1000ms au lieu de 400ms)
+    setInterval(killSecurityButton, 1000);
     </script>
 """, height=0)
 
@@ -78,7 +79,7 @@ st.markdown("""
     /* Suppression de la sidebar native */
     [data-testid="stSidebar"] { display: none; }
     
-    /* BOUTONS (ORANGE FONCÉ, TEXTE BLANC) */
+    /* BOUTONS GLOBAUX (ORANGE FONCÉ, TEXTE BLANC) */
     .stButton > button, [data-testid="stFormSubmitButton"] > button, .stDownloadButton > button {
         background-color: var(--orange-dark) !important;
         color: white !important;
@@ -109,8 +110,8 @@ st.markdown("""
 
     /* LABELS DES WIDGETS (Input, Select...) - BLANCS ET GRANDS */
     [data-testid="stWidgetLabel"] p, label {
-        color: #ffffff !important; /* Force le blanc */
-        font-size: 1.5rem !important; /* Agrandissement écriture */
+        color: #ffffff !important;
+        font-size: 1.5rem !important;
         font-weight: 700 !important;
         margin-bottom: 10px !important;
     }
@@ -121,7 +122,7 @@ st.markdown("""
         font-weight: bold;
     }
 
-    /* CARTES CONTENU (BLANCHES COMME DANS LA RÉFÉRENCE) */
+    /* CARTES CONTENU (BLANCHES) */
     .white-card, .report-card {
         background-color: var(--white) !important;
         padding: 40px !important;
@@ -138,40 +139,75 @@ st.markdown("""
         color: var(--orange-dark) !important;
     }
     
-    /* DESIGN SPÉCIFIQUE POUR LES STATISTIQUES (METRICS) */
+    /* --- DESIGN SPÉCIFIQUE STATISTIQUES (KPI) --- */
     [data-testid="stMetric"] {
         background-color: var(--white) !important;
-        padding: 20px !important;
+        padding: 30px 10px !important;
         border-radius: 16px !important;
         border-left: 10px solid var(--orange-light) !important;
         box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
         margin-bottom: 20px;
-        text-align: center !important; /* Centre tout le contenu */
+        text-align: center !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
+        height: 100% !important;
     }
     
-    /* TITRE DE LA STATISTIQUE (LABEL) -> BLEU NUIT & AGRANDI */
+    /* TITRE DE LA STATISTIQUE -> BLEU NUIT */
     [data-testid="stMetricLabel"] {
         width: 100% !important;
         justify-content: center !important;
     }
     [data-testid="stMetricLabel"] p {
-        color: var(--midnight) !important; /* Bleu Nuit */
-        font-size: 1.8rem !important; /* Agrandis */
+        color: var(--midnight) !important;
+        font-size: 1.6rem !important;
         font-weight: 800 !important;
         text-transform: uppercase !important;
+        letter-spacing: 1px !important;
     }
 
-    /* CHIFFRE DE LA STATISTIQUE (VALUE) -> ORANGE FONCÉ & XXL */
+    /* CHIFFRE DE LA STATISTIQUE -> ORANGE FONCÉ & XXL */
     [data-testid="stMetricValue"] div {
-        color: var(--orange-dark) !important; /* Orange Foncé */
-        font-size: 4rem !important; /* Max size */
+        color: var(--orange-dark) !important;
+        font-size: 5rem !important; /* Agrandissement Max */
         font-weight: 900 !important;
-        line-height: 1.2 !important; /* Interligne acceptable */
-        margin-top: 10px !important;
+        line-height: 1.1 !important;
+        margin-top: 15px !important;
+    }
+    
+    /* --- DESIGN FILE UPLOADER (CUSTOM) --- */
+    /* Masquer le texte par défaut (Drag & Drop, Limit...) */
+    [data-testid="stFileUploaderDropzoneInstructions"], [data-testid="stFileUploaderDropzone"] div small {
+        display: none !important;
+    }
+    
+    /* Styliser le conteneur pour qu'il soit propre */
+    [data-testid="stFileUploaderDropzone"] {
+        border: 2px dashed var(--orange-dark) !important;
+        background-color: rgba(255,255,255,0.05) !important;
+        padding: 20px !important;
+        min-height: auto !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    /* Cibler le bouton "Browse files" à l'intérieur */
+    [data-testid="stFileUploaderDropzone"] button {
+        background-color: var(--orange-dark) !important;
+        color: white !important;
+        border: none !important;
+        font-weight: 800 !important;
+        font-size: 1.1rem !important;
+        padding: 10px 25px !important;
+        border-radius: 8px !important;
+        width: auto !important;
+        margin: 0 auto !important;
+        display: block !important;
+    }
+    [data-testid="stFileUploaderDropzone"] button:hover {
+        background-color: var(--orange-light) !important;
     }
 
     /* TEXTES GÉNÉRAUX SUR FOND SOMBRE */
@@ -323,13 +359,11 @@ def show_footer():
         <div class="footer-wrapper">
             <div class="footer-content">
                 <div class="footer-hb" style="width:70px; height:70px; background:white; border:4px solid #f57c00; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#0047AB; font-weight:900; font-size:1.8rem; margin-bottom:20px; box-shadow:0 4px 15px rgba(0,0,0,0.3);">HB</div>
-                <h2 style="color:white !important; margin-bottom:15px; font-weight:900; letter-spacing:1px; font-size:1.8rem;">RÉALISÉ PAR HAITHEM BERKANE</h2>
+                <h2 style="color:white !important; margin-bottom:15px; font-weight:900; letter-spacing:1px; font-size:1.8rem;">RÉALISÉ PAR HAITHEM BERKANE TOUS DROITS RESERVES 2026</h2>
                 <div style="font-size:1.4rem; font-weight:700; opacity:0.95; margin-bottom:10px;">Institut National Spécialisé Belazzoug Athmane BBA 01</div>
                 <p style="font-size:1.2rem; opacity:0.7; font-weight:400;">Ministère de la Formation et de l'Enseignement Professionnels 🇩🇿</p>
                 <div style="height:4px; background:#f57c00; width:200px; margin:35px auto; border-radius:10px;"></div>
                 <p style="font-size:1.2rem; opacity:0.7; font-weight:400;">République Algérienne Démocratique et Populaire 🇩🇿</p>
-                
-                <p style="font-size:1rem; opacity:0.5; letter-spacing:1px;">TOUS DROITS RÉSERVÉS © 2026</p>
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -361,10 +395,22 @@ def audit_results_detailed(data):
                 else: st.info(f"🟢 Saisie normale ({int(cpm)} CPM)")
                 st.code(code, "python")
 
-def teacher_dash():
+# --- CACHING DES DONNÉES POUR FLUIDITÉ ---
+@st.cache_data(ttl=60) # Rafraîchissement auto toutes les 60s
+def fetch_dashboard_data():
     u_docs = get_col('users').where('role', '==', 'student').get()
     r_docs = get_col('results').get()
-    u_list = [u.to_dict() for u in u_docs]; r_list = [r.to_dict() for r in r_docs]
+    return [u.to_dict() for u in u_docs], [r.to_dict() for r in r_docs]
+
+def teacher_dash():
+    # Chargement optimisé des données
+    u_list, r_list = fetch_dashboard_data()
+    
+    # Bouton de rafraîchissement manuel pour les données temps réel
+    if st.button("🔄 Actualiser les données"):
+        fetch_dashboard_data.clear()
+        st.rerun()
+
     t1, t2, t3 = st.tabs(["📊 ANALYSE STATISTIQUE", "👥 GESTION SECTION", "📑 AUDIT DES COPIES"])
     
     with t1:
@@ -401,12 +447,17 @@ def teacher_dash():
         with c_i1:
             out_ex = io.BytesIO(); pd.DataFrame(columns=["Nom Complet"]).to_excel(out_ex, index=False)
             st.download_button("📂 MODÈLE EXCEL", out_ex.getvalue(), "modele.xlsx")
-            up_f = st.file_uploader("🚀 IMPORTER SECTION", type=['xlsx'])
+            
+            # FILE UPLOADER CUSTOMISÉ
+            up_f = st.file_uploader("Importer fichier Excel à charger", type=['xlsx'], label_visibility="visible")
+            
             if up_f and st.button("LANCER IMPORTATION"):
                 df = pd.read_excel(up_f)
                 for name in df.iloc[:, 0].dropna():
                     uid = name.lower().replace(" ", ".") + str(random.randint(10,99))
                     get_col('users').add({"name": name, "username": uid, "password": generate_pw(), "role": "student"})
+                # Invalider le cache pour voir les nouveaux étudiants
+                fetch_dashboard_data.clear()
                 st.rerun()
         with c_i2:
             if u_list: st.download_button("📥 GÉNÉRER FICHES ACCÈS (PDF)", generate_pdf_credentials(u_list), "Acces_ASR.pdf")
@@ -421,7 +472,8 @@ def teacher_dash():
                 st.markdown(f'<div class="white-card"><h2>COPIE : {data["name"]}</h2><h1>{data["score"]} / 20</h1></div>', unsafe_allow_html=True)
                 new_s = st.number_input("Ajuster Note :", 0.0, 20.0, float(data['score']), 0.25)
                 if st.button("SAUVEGARDER"):
-                    get_col('results').document(doc_t.id).update({"score": new_s}); st.success("Mis à jour !"); time.sleep(1); st.rerun()
+                    get_col('results').document(doc_t.id).update({"score": new_s}); st.success("Mis à jour !"); time.sleep(1); 
+                    fetch_dashboard_data.clear(); st.rerun()
                 st.divider(); audit_results_detailed(data)
 
 def exam_view():
