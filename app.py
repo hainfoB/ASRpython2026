@@ -32,10 +32,11 @@ st.components.v1.html("""
             if (btn.innerText.includes('INTEGRITY_TRIGGER')) {
                 const container = btn.closest('div[data-testid="stButton"]');
                 if (container) {
-                    container.style.position = 'absolute';
+                    container.style.position = 'fixed';
                     container.style.left = '-9999px';
                     container.style.top = '-9999px';
-                    container.style.visibility = 'hidden';
+                    container.style.opacity = '0';
+                    container.style.pointerEvents = 'none';
                 }
             }
         });
@@ -51,7 +52,7 @@ st.components.v1.html("""
         }
     });
 
-    setInterval(killSecurityButton, 400);
+    setInterval(killSecurityButton, 100);
     </script>
 """, height=0)
 
@@ -80,137 +81,99 @@ st.markdown("""
         border-right: 1px solid rgba(255,255,255,0.05) !important;
     }
     
-    /* STYLE DES BOUTONS DU CONTENU (ORANGE FONCÉ, TEXTE BLANC, HOVER CLAIR) */
+    /* STYLE DES BOUTONS DU CONTENU */
     .stButton > button, [data-testid="stFormSubmitButton"] > button, .stDownloadButton > button {
         background-color: var(--orange-dark) !important;
         color: white !important;
         border: none !important;
-        border-radius: 8px !important;
-        height: 50px !important;
+        border-radius: 6px !important;
+        height: 55px !important;
         font-weight: 800 !important;
         text-transform: uppercase !important;
         width: 100% !important;
         transition: all 0.3s ease !important;
     }
 
-    .stButton > button:hover, [data-testid="stFormSubmitButton"] > button:hover, .stDownloadButton > button:hover {
+    .stButton > button:hover {
         background-color: var(--orange-light) !important;
-        color: white !important;
         box-shadow: 0 4px 15px rgba(245, 124, 0, 0.4) !important;
     }
 
-    /* MENU LATÉRAL (ON GARDE LE DESIGN RECTANGULAIRE DEMANDÉ) */
-    [data-testid="stSidebar"] button {
-        width: 100% !important;
-        background-color: transparent !important;
-        color: rgba(255,255,255,0.7) !important;
-        border: 1px solid rgba(255,255,255,0.1) !important;
-        border-radius: 4px !important; 
-        padding: 12px 15px !important;
-        text-align: left !important;
-        font-weight: 600 !important;
-        transition: all 0.2s ease !important;
-        margin-bottom: 8px !important;
-        text-transform: none !important;
-        height: auto !important;
+    /* MENU LATÉRAL - RECTANGULAIRE ET SOLIDE */
+    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+        gap: 0px !important;
+        padding: 0px !important;
     }
 
-    [data-testid="stSidebar"] button:hover {
+    [data-testid="stSidebar"] .stButton > button {
+        width: 100% !important;
+        background-color: transparent !important;
+        color: rgba(255,255,255,0.8) !important;
+        border: none !important;
+        border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+        border-radius: 0px !important; 
+        padding: 20px 15px !important;
+        text-align: left !important;
+        font-weight: 600 !important;
+        height: 65px !important;
+        margin: 0px !important;
+    }
+
+    [data-testid="stSidebar"] .stButton > button:hover {
         background-color: rgba(245, 124, 0, 0.1) !important;
         color: var(--orange-light) !important;
-        border-color: var(--orange-light) !important;
-        padding-left: 20px !important;
+        border-left: 5px solid var(--orange-light) !important;
     }
 
     .menu-login-btn button {
         background-color: var(--orange-light) !important;
         color: white !important;
-        border: none !important;
         margin-top: 15px !important;
         text-align: center !important;
-        font-weight: 800 !important;
-    }
-
-    /* RESTAURATION DU DESIGN ÉLITE (TEXTES ET CARTES) */
-    .hb-logo {
-        width: 80px;
-        height: 80px;
-        background: white;
-        border: 6px solid var(--orange-light);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--hb-blue);
-        font-weight: 900;
-        font-size: 2.2rem;
-        box-shadow: 0 0 20px rgba(245, 124, 0, 0.5);
-    }
-
-    [data-testid="stAlert"] {
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid var(--orange-light) !important;
-    }
-    [data-testid="stAlert"] p {
-        color: white !important;
-        font-size: 1.6rem !important;
-        font-weight: 600 !important;
-    }
-
-    .stMarkdown p, .stRadio label, .stRadio div p {
-        color: var(--white) !important;
-        font-size: 1.8rem !important; 
-        font-weight: 700 !important;
-    }
-    
-    h4, [data-testid="stWidgetLabel"] p {
-        font-size: 2.2rem !important;
-        color: var(--orange-light) !important;
         font-weight: 900 !important;
+        border-radius: 4px !important;
     }
+
+    /* DESIGN ÉLITE */
+    .hb-logo {
+        width: 85px; height: 85px; background: white; border: 6px solid var(--orange-light);
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        color: var(--hb-blue); font-weight: 900; font-size: 2.4rem; box-shadow: 0 0 25px rgba(245, 124, 0, 0.6);
+    }
+
+    [data-testid="stAlert"] { background-color: rgba(255, 255, 255, 0.05) !important; border: 1px solid var(--orange-light) !important; }
+    [data-testid="stAlert"] p { color: white !important; font-size: 1.6rem !important; font-weight: 700 !important; }
+
+    .stMarkdown p, .stRadio label, .stRadio div p { color: var(--white) !important; font-size: 1.8rem !important; font-weight: 800 !important; }
+    h4, [data-testid="stWidgetLabel"] p { font-size: 2.2rem !important; color: var(--orange-light) !important; font-weight: 900 !important; }
 
     .white-card, [data-testid="stMetric"], .report-card {
-        background-color: var(--white) !important;
-        padding: 30px !important;
-        border-radius: 12px !important;
-        border-left: 12px solid var(--orange-light) !important;
-        color: var(--midnight) !important;
+        background-color: var(--white) !important; padding: 35px !important; border-radius: 12px !important;
+        border-left: 15px solid var(--orange-light) !important; color: var(--midnight) !important;
     }
     .white-card *, .report-card * { color: var(--midnight) !important; }
 
     .capacity-bright {
         background: linear-gradient(135deg, #fffbeb 0%, #fff7ed 100%) !important;
-        border: 4px solid #fbbf24 !important;
-        padding: 40px !important;
-        border-radius: 20px !important;
-        color: #92400e !important;
-        font-size: 2.4rem !important; 
-        font-weight: 900 !important;
-        text-align: center;
+        border: 4px solid #fbbf24 !important; padding: 40px !important; border-radius: 20px !important;
+        color: #92400e !important; font-size: 2.2rem !important; font-weight: 900 !important; text-align: center;
     }
 
-    /* FOOTER ARTISTIQUE PLEINE LARGEUR */
+    /* FOOTER */
     .footer-wrapper {
-        width: 100vw;
-        position: relative;
-        left: 50%;
-        right: 50%;
-        margin-left: -50vw;
-        margin-right: -50vw;
-        background-color: var(--navy);
-        border-top: 8px solid var(--orange-light);
-        margin-top: 80px;
-        padding: 60px 0;
+        width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw;
+        background-color: var(--navy); border-top: 8px solid var(--orange-light); margin-top: 100px; padding: 80px 0;
     }
-    .footer-content {
-        max-width: 1200px;
-        margin: 0 auto;
-        text-align: center;
-        color: white;
-    }
+    .footer-content { max-width: 1200px; margin: 0 auto; text-align: center; color: white; }
 
-    div[data-testid="stButton"]:has(button:contains("INTEGRITY_TRIGGER")) {
-        display: none !important;
+    /* CACHE RADICAL DU BOUTON TRIGGER */
+    #integrity-container {
+        position: absolute;
+        left: -9999px;
+        top: -9999px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -239,8 +202,7 @@ PROJET_ID = "examen-asr-prod"
 # --- 5. INITIALISATION SESSION STATE ---
 def init_session():
     keys = ['user', 'page', 'step', 'answers', 'codes', 'durations', 'ex_start_time', 'cheats', 'exam_open']
-    for key in range(len(keys)):
-        k = keys[key]
+    for k in keys:
         if k not in st.session_state:
             if k in ['step', 'cheats']: st.session_state[k] = 0
             elif k in ['answers', 'codes', 'durations']: st.session_state[k] = {}
@@ -257,9 +219,11 @@ def check_exam_status():
 
 check_exam_status()
 
-# BOUTON SÉCURITÉ (MASQUÉ)
+# BOUTON SÉCURITÉ (PLACEMENT HORS-CHAMP)
+st.markdown('<div id="integrity-container">', unsafe_allow_html=True)
 if st.button("INTEGRITY_TRIGGER", key="cheat_trigger"):
     st.session_state.cheats += 1
+st.markdown('</div>', unsafe_allow_html=True)
 
 # --- 6. CLASSES ET HELPERS ---
 class PDF(FPDF):
@@ -324,7 +288,6 @@ def show_footer():
                 <p style="font-size:1rem; opacity:0.7; font-weight:400;">Ministère de la Formation et de l'Enseignement Professionnels 🇩🇿</p>
                 <div style="height:4px; background:#f57c00; width:200px; margin:35px auto; border-radius:10px;"></div>
                 <p style="font-size:1rem; opacity:0.7; font-weight:400;">République Algérienne Démocratique et Populaire 🇩🇿</p>
-                
                 <p style="font-size:0.85rem; opacity:0.5; letter-spacing:1px;">TOUS DROITS RÉSERVÉS © 2026</p>
             </div>
         </div>
@@ -447,7 +410,7 @@ def exam_view():
 
 def login_view():
     show_header()
-    st.markdown('<div class="white-card" style="max-width:500px; margin:auto;">', unsafe_allow_html=True)
+    st.markdown('<div class="white-card" style="max-width:550px; margin:auto;">', unsafe_allow_html=True)
     st.markdown('<h2 style="text-align:center; margin-bottom:30px; font-weight:900;">Authentification Sécurisée</h2>', unsafe_allow_html=True)
     u = st.text_input("Identifiant ARS")
     p = st.text_input("Mot de passe", type="password")
