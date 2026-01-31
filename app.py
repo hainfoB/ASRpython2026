@@ -268,7 +268,6 @@ def show_footer():
                 <p style="font-size:1rem; opacity:0.7; font-weight:400;">République Algérienne Démocratique et Populaire 🇩🇿</p>
                 
                 
-            </div>
         </div>
     """, unsafe_allow_html=True)
 
