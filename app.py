@@ -318,6 +318,7 @@ try:
     # Définition des pages disponibles dans le menu
     pages = ["Accueil", "Énoncés", "FAQ", "Contact"]
     if st.session_state.user:
+        pages.append("Tableau de bord")
         pages.append("Déconnexion")
     else:
         pages.append("Connexion")
@@ -332,6 +333,11 @@ try:
         st.rerun()
     elif selected_page == "Connexion":
         st.session_state.page = "Connexion"
+    elif selected_page == "Tableau de bord":
+        if st.session_state.user['role'] == 'teacher':
+             st.session_state.page = 'Teacher'
+        else:
+             st.session_state.page = 'Student Dash'
     elif selected_page in pages:
         st.session_state.page = selected_page
 
@@ -345,7 +351,7 @@ except ImportError:
         </div>
     """, unsafe_allow_html=True)
     
-    col1, col2, col3, col4, col5 = st.columns([1, 1, 1, 1, 1.5])
+    col1, col2, col3, col4, col5 = st.columns([1, 1, 1, 1, 2.5])
     with col1: 
         if st.button("🏠 ACCUEIL", use_container_width=True): st.session_state.page = 'Accueil'
     with col2: 
@@ -356,10 +362,18 @@ except ImportError:
         if st.button("📞 CONTACT", use_container_width=True): st.session_state.page = 'Contact'
     with col5:
         if st.session_state.user:
-            if st.button("👤 DÉCONNEXION", use_container_width=True): 
-                st.session_state.user = None
-                st.session_state.page = 'Accueil'
-                st.rerun()
+            c_dash, c_logout = st.columns([1.5, 1])
+            with c_dash:
+                if st.button("📊 TABLEAU DE BORD", use_container_width=True):
+                    if st.session_state.user['role'] == 'teacher':
+                        st.session_state.page = 'Teacher'
+                    else:
+                        st.session_state.page = 'Student Dash'
+            with c_logout:
+                if st.button("SORTIR", use_container_width=True): 
+                    st.session_state.user = None
+                    st.session_state.page = 'Accueil'
+                    st.rerun()
         else:
             if st.button("🔐 CONNEXION", use_container_width=True): 
                 st.session_state.page = 'Connexion'
