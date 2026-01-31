@@ -139,39 +139,33 @@ st.markdown("""
     }
     .white-card *, .report-card * { color: var(--midnight) !important; }
 
-    /* CARTE DE VISITE PREMIUM 4K */
-    .premium-card {
-        background: linear-gradient(145deg, #112240, #0a192f);
-        border: 1px solid rgba(245, 124, 0, 0.3);
-        border-radius: 24px;
-        padding: 50px;
-        max-width: 650px;
-        margin: 50px auto;
-        box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+    /* CONTACT SIMPLE ET BEAU */
+    .simple-contact-card {
+        background-color: #112240;
+        border-radius: 16px;
+        padding: 40px;
+        max-width: 550px;
+        margin: 40px auto;
+        border: 1px solid rgba(245, 124, 0, 0.2);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         text-align: center;
-        position: relative;
     }
-    .card-accent {
-        position: absolute; top: 0; left: 0; width: 100%; height: 5px;
-        background: linear-gradient(90deg, #c2410c, #f57c00);
-        border-radius: 24px 24px 0 0;
-    }
-    .card-title { color: #f57c00; font-weight: 900; font-size: 2.2rem; margin-bottom: 5px; }
-    .card-subtitle { color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; font-size: 0.9rem; margin-bottom: 40px; }
-    .contact-grid { display: grid; grid-template-columns: 1fr; gap: 20px; text-align: left; max-width: 450px; margin: 0 auto; }
-    .contact-row { display: flex; align-items: center; background: rgba(255,255,255,0.03); padding: 15px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
-    .row-icon { font-size: 1.5rem; margin-right: 20px; }
-    .row-text { color: #e2e8f0; font-weight: 600; font-size: 1.1rem; }
+    .simple-contact-card h2 { color: #f57c00; font-weight: 900; margin-bottom: 5px; font-size: 2rem; }
+    .simple-contact-card p.title { color: #94a3b8; font-weight: 700; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 2px; margin-bottom: 30px; }
+    .contact-list { text-align: left; max-width: 400px; margin: 0 auto; }
+    .contact-list-item { display: flex; align-items: center; margin-bottom: 15px; color: #e2e8f0; font-size: 1.1rem; padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .contact-list-item:last-child { border-bottom: none; }
+    .contact-list-item span.icon { margin-right: 15px; font-size: 1.4rem; width: 30px; text-align: center; }
 
-    /* FOOTER OFFICIEL */
+    /* FOOTER OFFICIEL AGRANDI */
     .official-footer {
         width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw;
-        background-color: var(--navy); border-top: 5px solid var(--orange-light); margin-top: 100px; padding: 60px 0;
+        background-color: var(--navy); border-top: 6px solid var(--orange-light); margin-top: 100px; padding: 80px 0;
         text-align: center;
     }
-    .footer-line { color: white; font-weight: 700; margin-bottom: 8px; font-size: 1.1rem; }
-    .footer-subline { color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 5px; font-weight: 400; }
-    .footer-bottom { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; font-size: 0.8rem; color: #4b5563; }
+    .footer-line-main { color: white; font-weight: 900; margin-bottom: 15px; font-size: 1.6rem; letter-spacing: 1px; }
+    .footer-line-sub { color: rgba(255,255,255,0.85); font-size: 1.2rem; margin-bottom: 8px; font-weight: 600; }
+    .footer-bottom-text { margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 30px; font-size: 1rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
 
     /* CACHE RADICAL DU BOUTON TRIGGER */
     #integrity-container {
@@ -268,12 +262,12 @@ def show_header():
 def show_footer():
     st.markdown("""
         <div class="official-footer">
-            <div class="footer-line">M. Ahmed Haithem BERKANE PSFEP CIP</div>
-            <div class="footer-subline">Institut National Spécialisé dans la formation professionnelle BBA01</div>
-            <div class="footer-subline">Direction de la formation professionnelle BBA</div>
-            <div class="footer-subline">Ministère de la formation et de l'enseignement professionnels</div>
-            <div class="footer-bottom">
-                RADP 🇩🇿 | PLATEFORME ASR PRO | TOUS DROITS RÉSERVÉS © 2026
+            <div class="footer-line-main">M. Ahmed Haithem BERKANE PSFEP CIP</div>
+            <div class="footer-line-sub">Institut National Spécialisé dans la formation professionnelle BBA01</div>
+            <div class="footer-line-sub">Direction de la formation professionnelle BBA</div>
+            <div class="footer-line-sub">Ministère de la formation et de l'enseignement professionnels</div>
+            <div class="footer-bottom-text">
+                République Algérienne Démocratique et Populaire 🇩🇿 | PLATEFORME ASR PRO | 2026
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -404,32 +398,23 @@ def faq_view():
 def contact_view():
     show_header()
     st.markdown("""
-        <div class="premium-card">
-            <div class="card-accent"></div>
-            <div class="card-title">Haithem BERKANE</div>
-            <div class="card-subtitle">Enseignant Expert - ASR Pro</div>
+        <div class="simple-contact-card">
+            <h2>Ahmed Haithem BERKANE</h2>
+            <p class="title">PSFEP CIP - Expert ASR Pro</p>
             
-            <div class="contact-grid">
-                <div class="contact-row">
-                    <span class="row-icon">📱</span>
-                    <span class="row-text">+213 699 102 523 (WhatsApp)</span>
+            <div class="contact-list">
+                <div class="contact-list-item">
+                    <span class="icon">📱</span> +213 699 102 523 (WhatsApp)
                 </div>
-                <div class="contact-row">
-                    <span class="row-icon">📧</span>
-                    <span class="row-text">haithemcomputing@gmail.com</span>
+                <div class="contact-list-item">
+                    <span class="icon">📧</span> haithemcomputing@gmail.com
                 </div>
-                <div class="contact-row">
-                    <span class="row-icon">🔗</span>
-                    <span class="row-text">Facebook & LinkedIn : Haithem BERKANE</span>
+                <div class="contact-list-item">
+                    <span class="icon">👤</span> Facebook & LinkedIn : Haithem BERKANE
                 </div>
-                <div class="contact-row">
-                    <span class="row-icon">📍</span>
-                    <span class="row-text">INSFP Belazzoug Athmane BBA 01</span>
+                <div class="contact-list-item">
+                    <span class="icon">📍</span> INSFP Belazzoug Athmane BBA 01
                 </div>
-            </div>
-            
-            <div style="margin-top:40px; font-size:0.8rem; opacity:0.5; letter-spacing:1px; font-weight:700; color:white;">
-                ARCHITECTURE SYSTÈME & SÉCURITÉ RÉSEAUX
             </div>
         </div>
     """, unsafe_allow_html=True)
