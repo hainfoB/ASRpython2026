@@ -26,32 +26,17 @@ st.components.v1.html("""
     document.addEventListener('copy', e => e.preventDefault());
     document.addEventListener('paste', e => e.preventDefault());
     
-    function killSecurityButton() {
-        const buttons = window.parent.document.querySelectorAll('button');
-        buttons.forEach(btn => {
-            if (btn.innerText.includes('INTEGRITY_TRIGGER')) {
-                const container = btn.closest('div[data-testid="stButton"]');
-                if (container) {
-                    container.style.position = 'absolute';
-                    container.style.left = '-9999px';
-                    container.style.top = '-9999px';
-                    container.style.visibility = 'hidden';
-                }
-            }
-        });
-    }
-
+    // Détection de perte de focus (Changement d'onglet ou fenêtre)
     window.addEventListener('blur', function() {
         const buttons = window.parent.document.querySelectorAll('button');
         for (let btn of buttons) {
+            // On cherche le bouton par son texte pour le déclencher
             if (btn.innerText.includes('INTEGRITY_TRIGGER')) {
                 btn.click();
                 break;
             }
         }
     });
-
-    setInterval(killSecurityButton, 400);
     </script>
 """, height=0)
 
@@ -86,20 +71,22 @@ st.markdown("""
         color: white !important;
         border: none !important;
         border-radius: 8px !important;
-        height: 50px !important;
+        height: 55px !important;
         font-weight: 800 !important;
         text-transform: uppercase !important;
         width: 100% !important;
         transition: all 0.3s ease !important;
+        font-size: 1.1rem !important;
     }
 
     .stButton > button:hover, [data-testid="stFormSubmitButton"] > button:hover, .stDownloadButton > button:hover {
         background-color: var(--orange-light) !important;
         color: white !important;
-        box-shadow: 0 4px 15px rgba(245, 124, 0, 0.4) !important;
+        box-shadow: 0 4px 20px rgba(245, 124, 0, 0.5) !important;
+        transform: translateY(-2px);
     }
 
-    /* MENU LATÉRAL (ON GARDE LE DESIGN RECTANGULAIRE DEMANDÉ) */
+    /* MENU LATÉRAL RECTANGULAIRE */
     [data-testid="stSidebar"] button {
         width: 100% !important;
         background-color: transparent !important;
@@ -131,7 +118,7 @@ st.markdown("""
         font-weight: 800 !important;
     }
 
-    /* RESTAURATION DU DESIGN ÉLITE (TEXTES ET CARTES) */
+    /* DESIGN ÉLITE (TEXTES MASSIFS) */
     .hb-logo {
         width: 80px;
         height: 80px;
@@ -189,7 +176,7 @@ st.markdown("""
         text-align: center;
     }
 
-    /* FOOTER ARTISTIQUE PLEINE LARGEUR */
+    /* FOOTER ARTISTIQUE */
     .footer-wrapper {
         width: 100vw;
         position: relative;
@@ -209,8 +196,13 @@ st.markdown("""
         color: white;
     }
 
-    div[data-testid="stButton"]:has(button:contains("INTEGRITY_TRIGGER")) {
+    /* MASQUAGE ABSOLU DU BOUTON INTEGRITY */
+    .hidden-btn {
         display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        width: 0 !important;
+        position: absolute !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -239,8 +231,7 @@ PROJET_ID = "examen-asr-prod"
 # --- 5. INITIALISATION SESSION STATE ---
 def init_session():
     keys = ['user', 'page', 'step', 'answers', 'codes', 'durations', 'ex_start_time', 'cheats', 'exam_open']
-    for key in range(len(keys)):
-        k = keys[key]
+    for k in keys:
         if k not in st.session_state:
             if k in ['step', 'cheats']: st.session_state[k] = 0
             elif k in ['answers', 'codes', 'durations']: st.session_state[k] = {}
@@ -257,9 +248,11 @@ def check_exam_status():
 
 check_exam_status()
 
-# BOUTON SÉCURITÉ (MASQUÉ)
+# BOUTON SÉCURITÉ (ENCAPSULÉ DANS UNE DIV MASQUÉE)
+st.markdown('<div class="hidden-btn">', unsafe_allow_html=True)
 if st.button("INTEGRITY_TRIGGER", key="cheat_trigger"):
     st.session_state.cheats += 1
+st.markdown('</div>', unsafe_allow_html=True)
 
 # --- 6. CLASSES ET HELPERS ---
 class PDF(FPDF):
@@ -321,9 +314,7 @@ def show_footer():
                 <div class="footer-hb" style="width:65px; height:65px; background:white; border:4px solid #f57c00; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#0047AB; font-weight:900; font-size:1.6rem; margin-bottom:20px; box-shadow:0 4px 15px rgba(0,0,0,0.3);">HB</div>
                 <h2 style="color:white !important; margin-bottom:15px; font-weight:900; letter-spacing:1px;">RÉALISÉ PAR HAITHEM BERKANE</h2>
                 <div style="font-size:1.3rem; font-weight:700; opacity:0.95; margin-bottom:10px;">Institut National Spécialisé Belazzoug Athmane BBA 01</div>
-                <p style="font-size:1rem; opacity:0.7; font-weight:400;">Ministère de la Formation et de l'Enseignement Professionnels 🇩🇿</p>
-                <div style="height:4px; background:#f57c00; width:200px; margin:35px auto; border-radius:10px;"></div>
-                <p style="font-size:1rem; opacity:0.7; font-weight:400;">République Algérienne Démocratique et Populaire 🇩🇿</p>
+                <p style="font-size:1rem; opacity:0.7; font-weight:400;">Ministère de la Formation et de l'Enseignement Professionnels | RADP 🇩🇿</p>
                 <div style="height:4px; background:#f57c00; width:200px; margin:35px auto; border-radius:10px;"></div>
                 <p style="font-size:0.85rem; opacity:0.5; letter-spacing:1px;">TOUS DROITS RÉSERVÉS © 2026</p>
             </div>
