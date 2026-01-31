@@ -12,7 +12,6 @@ import json
 from fpdf import FPDF
 
 # --- 1. CONFIGURATION DE LA PAGE ---
-# Configuration "Élite" pour une immersion professionnelle totale
 st.set_page_config(
     page_title="ASR Pro - Excellence Pédagogique",
     page_icon="🛡️",
@@ -21,14 +20,12 @@ st.set_page_config(
 )
 
 # --- 2. SÉCURITÉ & PROTECTION (ANTI-TRICHE JS) ---
-# Script de surveillance d'intégrité (context menu, focus, copy-paste)
 st.components.v1.html("""
     <script>
     document.addEventListener('contextmenu', event => event.preventDefault());
     document.addEventListener('copy', e => e.preventDefault());
     document.addEventListener('paste', e => e.preventDefault());
     
-    // Détection automatique de changement d'onglet ou de fenêtre
     window.addEventListener('blur', function() {
         const buttons = window.parent.document.querySelectorAll('button');
         for (let btn of buttons) {
@@ -42,7 +39,6 @@ st.components.v1.html("""
 """, height=0)
 
 # --- 3. DESIGN SYSTEM "ÉLITE" ET UI/UX ---
-# Définition des styles CSS pour Streamlit Cloud (Menu rectangulaire et Boutons Orange)
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
@@ -66,45 +62,51 @@ st.markdown("""
         background-color: var(--navy) !important; 
         border-right: 1px solid rgba(255,255,255,0.05) !important;
     }
-    
-    /* --- RÉGLAGE DU MENU LATÉRAL (RECTANGULAIRE ET RÉGULIER) --- */
-    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] { gap: 0px !important; }
+
+    /* --- RÉGLAGE MENU LATÉRAL RECTANGULAIRE & RÉGULIER (FORCE CLOUD) --- */
+    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+        gap: 0px !important;
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+    }
 
     [data-testid="stSidebar"] .stButton > button {
         width: 100% !important;
-        border-radius: 0px !important;
+        border-radius: 0px !important; /* RECTANGULAIRE PUR */
         border: none !important;
-        border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+        border-bottom: 1px solid rgba(255,255,255,0.03) !important;
         background-color: transparent !important;
         color: rgba(255,255,255,0.7) !important;
-        padding: 18px 20px !important;
+        padding: 22px 20px !important;
         text-align: left !important;
         font-weight: 600 !important;
-        transition: all 0.3s ease !important;
+        transition: all 0.2s ease-in-out !important;
         margin: 0px !important;
-        height: 55px !important;
+        height: 65px !important;
+        display: flex !important;
+        align-items: center !important;
     }
 
     [data-testid="stSidebar"] .stButton > button:hover {
         background-color: rgba(245, 124, 0, 0.1) !important;
         color: var(--orange-light) !important;
-        padding-left: 25px !important;
-        border-left: 4px solid var(--orange-light) !important;
+        padding-left: 30px !important;
+        border-left: 6px solid var(--orange-light) !important;
     }
 
-    /* Style spécifique pour le bouton SE CONNECTER / DÉCONNEXION dans le menu */
+    /* Bouton SE CONNECTER distinct mais rectangulaire */
     .menu-login-btn .stButton > button {
         background-color: var(--orange-light) !important;
         color: white !important;
         font-weight: 800 !important;
-        margin-top: 10px !important;
+        margin-top: 15px !important;
         justify-content: center !important;
         text-align: center !important;
-        border-radius: 4px !important;
         border: none !important;
+        border-radius: 4px !important; /* Légèrement arrondi pour le bouton d'action */
     }
 
-    /* --- STYLE DES BOUTONS DU CONTENU (ORANGE FONCÉ, TEXTE BLANC) --- */
+    /* --- BOUTONS INTERNES ORANGE FONCÉ --- */
     .stButton > button, [data-testid="stFormSubmitButton"] > button, .stDownloadButton > button {
         background-color: var(--orange-dark) !important;
         color: white !important;
@@ -119,56 +121,48 @@ st.markdown("""
 
     .stButton > button:hover {
         background-color: var(--orange-light) !important;
-        box-shadow: 0 4px 15px rgba(245, 124, 0, 0.4) !important;
+        box-shadow: 0 4px 20px rgba(245, 124, 0, 0.4) !important;
+        transform: translateY(-2px);
     }
 
-    /* --- TYPOGRAPHIE ET CARTES ÉLITE --- */
+    /* --- DESIGN ÉLITE (CARTES ET TEXTES) --- */
     .hb-logo {
         width: 85px; height: 85px; background: white; border: 6px solid var(--orange-light);
         border-radius: 50%; display: flex; align-items: center; justify-content: center;
         color: var(--hb-blue); font-weight: 900; font-size: 2.4rem; box-shadow: 0 0 25px rgba(245, 124, 0, 0.6);
     }
 
-    [data-testid="stAlert"] { 
-        background-color: rgba(255, 255, 255, 0.05) !important; 
-        border: 1px solid var(--orange-light) !important; 
-    }
-    [data-testid="stAlert"] p { 
-        color: white !important; 
-        font-size: 1.6rem !important; 
-        font-weight: 700 !important; 
-    }
+    [data-testid="stAlert"] { background-color: rgba(255, 255, 255, 0.05) !important; border: 1px solid var(--orange-light) !important; }
+    [data-testid="stAlert"] p { color: white !important; font-size: 1.6rem !important; font-weight: 700 !important; }
 
-    .stMarkdown p, .stRadio label, .stRadio div p { 
-        color: var(--white) !important; 
-        font-size: 1.8rem !important; 
-        font-weight: 800 !important; 
-    }
-    
-    h4, [data-testid="stWidgetLabel"] p { 
-        font-size: 2.2rem !important; 
-        color: var(--orange-light) !important; 
-        font-weight: 900 !important; 
-    }
+    .stMarkdown p, .stRadio label, .stRadio div p { color: var(--white) !important; font-size: 1.8rem !important; font-weight: 800 !important; }
+    h4, [data-testid="stWidgetLabel"] p { font-size: 2.2rem !important; color: var(--orange-light) !important; font-weight: 900 !important; }
 
     .white-card, [data-testid="stMetric"], .report-card {
-        background-color: var(--white) !important; 
-        padding: 35px !important; 
-        border-radius: 12px !important;
-        border-left: 15px solid var(--orange-light) !important; 
-        color: var(--midnight) !important;
+        background-color: var(--white) !important; padding: 40px !important; border-radius: 12px !important;
+        border-left: 20px solid var(--orange-light) !important; color: var(--midnight) !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
     }
     .white-card *, .report-card * { color: var(--midnight) !important; }
 
-    /* --- FOOTER ARTISTIQUE --- */
+    /* --- FOOTER ÉLITE --- */
     .footer-wrapper {
         width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw;
-        background-color: var(--navy); border-top: 8px solid var(--orange-light); margin-top: 80px; padding: 60px 0;
+        background-color: var(--navy); border-top: 8px solid var(--orange-light); margin-top: 100px; padding: 80px 0;
     }
     .footer-content { max-width: 1200px; margin: 0 auto; text-align: center; color: white; }
 
-    /* PROTECTION RADICALE : MASQUAGE DU BOUTON INTEGRITY HORS-ÉCRAN */
-    .ultra-hidden { position: fixed !important; bottom: -10000px !important; left: -10000px !important; opacity: 0 !important; }
+    /* MASQUAGE RADICAL DU BOUTON INTEGRITY (HORS-ZONE) */
+    .ultra-hidden {
+        position: fixed !important;
+        top: -1000px !important;
+        left: -1000px !important;
+        width: 1px !important;
+        height: 1px !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        overflow: hidden !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -183,7 +177,7 @@ if not firebase_admin._apps:
             cred = credentials.Certificate(firebase_secrets)
             firebase_admin.initialize_app(cred)
     except Exception as e:
-        st.error(f"❌ Erreur de configuration Firebase : {e}")
+        st.error(f"❌ Erreur Firebase critique.")
         st.stop()
 
 db = firestore.client()
@@ -204,8 +198,7 @@ init_session()
 
 def check_exam_status():
     doc = db.collection('artifacts').document(PROJET_ID).collection('public').document('data').collection('settings').document('status').get()
-    if doc.exists:
-        st.session_state.exam_open = doc.to_dict().get('is_open', True)
+    if doc.exists: st.session_state.exam_open = doc.to_dict().get('is_open', True)
 
 check_exam_status()
 
@@ -240,7 +233,7 @@ def generate_pdf_credentials(users_list):
         pdf.cell(35, 12, u.get('password'), 1); pdf.cell(35, 12, "", 1, 1)
     return pdf.output(dest='S').encode('latin-1')
 
-# --- 7. DONNÉES EXAMEN (VERSION COMPLÈTE) ---
+# --- 7. DONNÉES EXAMEN COMPLETES ---
 EXERCICES = [
     {"id": 1, "titre": "Algorithmique - Contrôle d'Accès", "points": 5, "enonce": "Écrivez un programme qui demande l'année de naissance de l'utilisateur.\n1. Calculez son âge (année de référence 2026).\n2. Si l'utilisateur a 18 ans ou plus, affichez: 'Accès autorisé. Bienvenue !'.\n3. Sinon, affichez: 'Accès refusé. Vous devez être majeur.'.", "questions": [{"id":"q1_1","text":"Âge calculé pour naissance en 2010 ?", "type":"number", "correct":16}, {"id":"q1_2","text":"Message retourné pour 16 ans ?", "type":"choice", "options":["Accès autorisé. Bienvenue !", "Accès refusé. Vous devez être majeur."], "correct":"Accès refusé. Vous devez être majeur."}]},
     {"id": 2, "titre": "Physique - État de l'eau", "points": 5, "enonce": "Demandez la température T de l'eau (°C) et affichez son état :\n- T <= 0 : Glace\n- 0 < T < 100 : Liquide\n- T >= 100 : Vapeur\n- Bonus : Si T > 300, affichez 'Attention : Température critique !'.", "questions": [{"id":"q2_1","text":"État physique à 100°C pile ?", "type":"choice", "options":["Glace", "Liquide", "Vapeur"], "correct":"Vapeur"}]},
@@ -320,14 +313,6 @@ def teacher_dash():
         col_m[0].metric("Inscrits", len(u_list)); col_m[1].metric("Présents", len(r_list))
         col_m[2].metric("Absents", max(0, len(u_list) - len(r_list)))
         col_m[3].metric("Moyenne Section", f"{pd.DataFrame(r_list)['score'].mean():.2f}" if r_list else "0.00")
-        
-        if r_list:
-            df_s = pd.DataFrame(r_list); st.divider(); c_a = st.columns(3)
-            with c_a[0]: st.metric("Note Maximale", f"{df_s['score'].max()} / 20")
-            with c_a[1]: st.metric("Note Minimale", f"{df_s['score'].min()} / 20")
-            df_br = pd.DataFrame([r['breakdown'] for r in r_list]); best_id = df_br.mean().idxmax()
-            best_name = next(e['titre'] for e in EXERCICES if str(e['id']) == str(best_id))
-            with c_a[2]: st.metric("Meilleur Axe", f"Ex {best_id}")
             
     with t2:
         c_i1, c_i2 = st.columns(2)
@@ -456,7 +441,7 @@ elif p == 'contact':
     show_header(); st.markdown('<div class="white-card"><h2>Support Technique & Pédagogique</h2><p>📧 haithemcomputing@gmail.com<br>📍 Département Informatique - INSFP Belazzoug Athmane BBA 01<br>👤 Responsable : Haithem BERKANE</p></div>', unsafe_allow_html=True); show_footer()
 else: accueil_view()
 
-# --- 10. BOUTON SÉCURITÉ (HORS-VUE) ---
+# --- 10. BOUTON SÉCURITÉ (HORS-VUE RADICAL) ---
 st.markdown('<div class="ultra-hidden">', unsafe_allow_html=True)
 if st.button("INTEGRITY_TRIGGER", key="cheat_trigger_final"):
     st.session_state.cheats += 1
