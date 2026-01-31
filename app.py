@@ -133,7 +133,7 @@ PROJET_ID = "examen-asr-prod"
 
 # --- 5. ETAT DE SESSION ---
 if 'user' not in st.session_state: st.session_state.user = None
-if 'page' not in st.session_state: st.session_state.page = 'Accueil' # Default capitalized for navbar
+if 'page' not in st.session_state: st.session_state.page = 'Accueil' 
 if 'step' not in st.session_state: st.session_state.step = 0
 if 'answers' not in st.session_state: st.session_state.answers = {}
 if 'codes' not in st.session_state: st.session_state.codes = {}
@@ -141,7 +141,16 @@ if 'cheats' not in st.session_state: st.session_state.cheats = 0
 if 'exam_open' not in st.session_state: st.session_state.exam_open = True
 if 'ex_start_time' not in st.session_state: st.session_state.ex_start_time = time.time()
 
-# --- 6. DONNÉES EXAMEN ---
+# --- 6. UTILITAIRES (Fonctions manquantes) ---
+def get_col(name):
+    # Helper pour accéder rapidement aux collections Firestore
+    return db.collection('artifacts').document(PROJET_ID).collection('public').document('data').collection(name)
+
+def generate_pw(l=8):
+    # Générateur de mots de passe pour les étudiants
+    return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(l))
+
+# --- 7. DONNÉES EXAMEN ---
 EXERCICES = [
     {"id": 1, "titre": "Algorithmique - Contrôle d'Accès", "points": 5, "enonce": "Écrivez un programme qui demande l'année de naissance de l'utilisateur.\n1. Calculez son âge (référence 2026).\n2. Si l'utilisateur a 18 ans ou plus, affichez: 'Accès autorisé. Bienvenue !'.\n3. Sinon, affichez: 'Accès refusé. Vous devez être majeur.'.", "questions": [{"id":"q1_1","text":"Âge calculé pour naissance en 2010 ?", "type":"number", "correct":16}, {"id":"q1_2","text":"Message retourné pour 16 ans ?", "type":"choice", "options":["Accès autorisé. Bienvenue !", "Accès refusé. Vous devez être majeur."], "correct":"Accès refusé. Vous devez être majeur."}]},
     {"id": 2, "titre": "Physique - État de l'eau", "points": 5, "enonce": "Demandez la température T de l'eau (°C) et affichez son état :\n- T <= 0 : Glace\n- 0 < T < 100 : Liquide\n- T >= 100 : Vapeur\nBonus : Si T > 300, affichez 'Attention : Température critique !'.", "questions": [{"id":"q2_1","text":"État physique à 100°C pile ?", "type":"choice", "options":["Glace", "Liquide", "Vapeur"], "correct":"Vapeur"}]},
@@ -149,7 +158,7 @@ EXERCICES = [
     {"id": 4, "titre": "Ingénierie Financière - Crédit", "points": 5, "enonce": "Vérifiez l'éligibilité au crédit :\n- Épargne (Revenu - Dépenses) <= 0 : Refus (Fonds insuffisants).\n- Taux d'endettement (Mensualité / Revenu) > 33% : Refus (Taux > 33%).\n- Sinon : Pré-approuvé.", "questions": [{"id":"q4_1","text":"Revenu 2000, Dépenses 2000. Décision ?", "type":"choice", "options":["Fonds insuffisants", "Taux > 33%"], "correct":"Fonds insuffisants"}]}
 ]
 
-# --- 7. COMPOSANTS D'INTERFACE ---
+# --- 8. COMPOSANTS D'INTERFACE ---
 
 def show_header():
     st.markdown("""
@@ -173,7 +182,7 @@ def show_footer():
         </div>
     """, unsafe_allow_html=True)
 
-# --- 8. VUES ---
+# --- 9. VUES ---
 
 def accueil_view():
     show_header()
@@ -284,8 +293,85 @@ def exam_view():
 
 def teacher_dash():
     show_header()
-    st.title("Tableau de Bord Enseignant")
-    st.info("Gestion des sessions et des notes.")
+    
+    # Récupération des données Firebase
+    try:
+        u_docs = get_col('users').where('role', '==', 'student').get()
+        r_docs = get_col('results').get()
+        u_list = [u.to_dict() for u in u_docs]
+        r_list = [r.to_dict() for r in r_docs]
+    except Exception as e:
+        st.error(f"Erreur de connexion à la base de données : {e}")
+        u_list, r_list = [], []
+
+    st.markdown("<h1 style='text-align:center;'>📊 TABLEAU DE BORD ENSEIGNANT</h1>", unsafe_allow_html=True)
+    
+    t1, t2, t3 = st.tabs(["STATISTIQUES", "GESTION CLASSES", "AUDIT COPIES"])
+    
+    with t1:
+        st.markdown("### 🔒 Contrôle Administratif")
+        cl1, cl2 = st.columns([2, 1])
+        cl1.info(f"État actuel : **{'OUVERT' if st.session_state.exam_open else 'FERMÉ'}**")
+        if cl2.button("BASCULER ÉTAT SESSION"):
+            ns = not st.session_state.exam_open
+            st.session_state.exam_open = ns
+            # Mise à jour Firebase si possible
+            try:
+                db.collection('artifacts').document(PROJET_ID).collection('public').document('data').collection('settings').document('status').set({'is_open': ns})
+            except: pass
+            st.rerun()
+        
+        st.divider()
+        
+        # Métriques
+        col_m = st.columns(4)
+        col_m[0].metric("Inscrits", len(u_list))
+        col_m[1].metric("Présents", len(r_list))
+        col_m[2].metric("Absents", max(0, len(u_list) - len(r_list)))
+        avg_score = pd.DataFrame(r_list)['score'].mean() if r_list else 0
+        col_m[3].metric("Moyenne", f"{avg_score:.2f} / 20")
+            
+    with t2:
+        st.markdown("### 👥 Gestion de la Section")
+        c_i1, c_i2 = st.columns(2)
+        with c_i1:
+            st.write("**Importer une liste d'étudiants**")
+            # Générer un modèle Excel
+            out_ex = io.BytesIO()
+            pd.DataFrame(columns=["Nom Complet"]).to_excel(out_ex, index=False)
+            st.download_button("📂 Télécharger Modèle Excel", out_ex.getvalue(), "modele.xlsx")
+            
+            up_f = st.file_uploader("Importer fichier Excel", type=['xlsx'])
+            if up_f and st.button("LANCER L'IMPORTATION"):
+                try:
+                    df = pd.read_excel(up_f)
+                    count = 0
+                    for name in df.iloc[:, 0].dropna():
+                        uid = name.lower().replace(" ", ".") + str(random.randint(10,99))
+                        pw = generate_pw()
+                        get_col('users').add({"name": name, "username": uid, "password": pw, "role": "student"})
+                        count += 1
+                    st.success(f"{count} étudiants importés avec succès !")
+                    time.sleep(1)
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Erreur d'import : {e}")
+        
+        with c_i2:
+            st.write("**Liste des inscrits**")
+            if u_list:
+                st.dataframe(pd.DataFrame(u_list)[['name', 'username', 'password']], use_container_width=True)
+            else:
+                st.info("Aucun étudiant inscrit.")
+            
+    with t3:
+        st.markdown("### 📑 Résultats & Audit")
+        if r_list:
+            df_res = pd.DataFrame([{"ID": r.get('username'), "Nom": r.get('name'), "Note": r.get('score'), "Alertes Triche": r.get('cheats',0)} for r in r_list])
+            st.dataframe(df_res, use_container_width=True)
+        else:
+            st.info("Aucune copie rendue pour le moment.")
+            
     show_footer()
 
 # --- NAVIGATION SYSTEM (INTELLIGENT) ---
