@@ -16,7 +16,7 @@ st.set_page_config(
     page_title="ASR Pro - Excellence Pédagogique",
     page_icon="🛡️",
     layout="wide",
-    initial_sidebar_state="collapsed" # On réduit la sidebar native par défaut
+    initial_sidebar_state="collapsed"
 )
 
 # --- 2. SÉCURITÉ & PROTECTION (ANTI-TRICHE JS) ---
@@ -38,7 +38,7 @@ st.components.v1.html("""
     </script>
 """, height=0)
 
-# --- 3. DESIGN SYSTEM "ÉLITE" ET NAVIGATION HORIZONTALE ---
+# --- 3. DESIGN SYSTEM "METRO ELITE" (CENTRE & RESPONSIVE) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
@@ -49,16 +49,10 @@ st.markdown("""
         --orange-dark: #c2410c;
         --orange-light: #f57c00;
         --white: #ffffff;
-        --hb-blue: #0047AB;
     }
 
-    /* --- SOLUTION RADICALE : CACHER LA SIDEBAR NATIVE --- */
-    [data-testid="stSidebar"] {
-        display: none !important;
-    }
-    [data-testid="stSidebarNav"] {
-        display: none !important;
-    }
+    /* Suppression Sidebar native */
+    [data-testid="stSidebar"] { display: none !important; }
 
     html, body, [data-testid="stAppViewContainer"], .main {
         background-color: var(--midnight) !important;
@@ -66,77 +60,111 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
 
-    /* --- STYLE DES BOUTONS DE NAVIGATION (RECTANGULAIRE ET UNIFORME) --- */
-    /* On utilise les colonnes de Streamlit pour simuler une Top-Nav */
+    /* --- CONTAINER CENTRAL METRO --- */
+    .metro-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    /* --- TUILES METRO (DESIGN BOUTONS NAVIGATION) --- */
     .stButton > button {
         width: 100% !important;
-        border-radius: 0px !important;
-        border: 1px solid rgba(255,255,255,0.1) !important;
+        aspect-ratio: 1 / 1; /* Tuiles carrées sur tablette/desktop */
         background-color: var(--navy) !important;
-        color: rgba(255,255,255,0.8) !important;
-        padding: 15px !important;
-        font-weight: 700 !important;
+        color: var(--white) !important;
+        border: 2px solid rgba(255,255,255,0.05) !important;
+        border-radius: 4px !important;
+        font-weight: 900 !important;
+        font-size: 1.2rem !important;
         text-transform: uppercase !important;
-        letter-spacing: 1px !important;
-        transition: all 0.3s ease !important;
-        height: 60px !important;
+        letter-spacing: 2px !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+        margin-bottom: 15px !important;
+    }
+
+    @media (max-width: 768px) {
+        .stButton > button {
+            aspect-ratio: auto !important;
+            height: 100px !important;
+            font-size: 1rem !important;
+        }
     }
 
     .stButton > button:hover {
         background-color: var(--orange-dark) !important;
-        color: white !important;
+        border-color: var(--orange-light) !important;
+        transform: scale(1.03) !important;
+        box-shadow: 0 10px 30px rgba(194, 65, 12, 0.4) !important;
+    }
+
+    /* --- BOUTON CONNEXION / ACTION SPECIALE --- */
+    .login-tile button {
+        background-color: var(--orange-dark) !important;
         border-color: var(--orange-light) !important;
     }
 
-    /* BOUTONS INTERNES ORANGE FONCÉ (DESIGN ÉLITE) */
-    .main-btn button {
+    /* BOUTONS INTERNES AU CONTENU (EXAMEN) */
+    .main-action button {
+        aspect-ratio: auto !important;
+        height: 65px !important;
         background-color: var(--orange-dark) !important;
-        color: white !important;
-        border-radius: 4px !important;
-        height: 60px !important;
-        font-size: 1.1rem !important;
-        border: none !important;
-    }
-    
-    .main-btn button:hover {
-        background-color: var(--orange-light) !important;
-        box-shadow: 0 4px 20px rgba(245, 124, 0, 0.5) !important;
+        border-radius: 8px !important;
+        margin-top: 20px !important;
     }
 
-    /* --- CARTES ET TYPOGRAPHIE --- */
+    /* --- LOGO ET TYPOGRAPHIE --- */
     .hb-logo {
-        width: 80px; height: 80px; background: white; border: 5px solid var(--orange-light);
+        width: 100px; height: 100px; background: white; border: 6px solid var(--orange-light);
         border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        color: var(--hb-blue); font-weight: 900; font-size: 2.2rem; margin: 0 auto;
+        color: #0047AB; font-weight: 900; font-size: 2.8rem; box-shadow: 0 0 30px rgba(245, 124, 0, 0.6);
+        margin: 0 auto 20px auto;
     }
 
     .white-card, [data-testid="stMetric"], .report-card {
         background-color: var(--white) !important;
         padding: 40px !important;
-        border-radius: 12px !important;
+        border-radius: 15px !important;
         border-left: 15px solid var(--orange-light) !important;
         color: var(--midnight) !important;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.5) !important;
     }
     .white-card *, .report-card * { color: var(--midnight) !important; }
 
-    [data-testid="stAlert"] { background-color: rgba(255, 255, 255, 0.05) !important; border: 1px solid var(--orange-light) !important; }
-    [data-testid="stAlert"] p { color: white !important; font-size: 1.6rem !important; font-weight: 700 !important; }
-
-    .stMarkdown p, .stRadio label, .stRadio div p { font-size: 1.8rem !important; font-weight: 800 !important; }
-    h1, h4, [data-testid="stWidgetLabel"] p { color: var(--orange-light) !important; font-weight: 900 !important; }
+    h1, h4, [data-testid="stWidgetLabel"] p {
+        color: var(--orange-light) !important;
+        font-weight: 900 !important;
+        text-align: center;
+    }
+    
+    .stMarkdown p, .stRadio label, .stRadio div p {
+        font-size: 1.4rem !important; 
+        font-weight: 700 !important;
+    }
 
     /* FOOTER */
     .footer-wrapper {
         width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw;
-        background-color: var(--navy); border-top: 8px solid var(--orange-light); margin-top: 80px; padding: 60px 0;
-        text-align: center;
+        background-color: var(--navy); border-top: 8px solid var(--orange-light); margin-top: 100px; padding: 60px 0;
     }
 
-    /* MASQUAGE ABSOLU DU TRIGGER */
-    .hidden-trigger {
+    /* MASQUAGE ABSOLU DU TRIGGER SÉCURITÉ */
+    .hidden-zone {
         position: fixed !important;
-        top: -1000px !important;
+        top: -2000px !important;
+        left: -2000px !important;
+        width: 1px !important;
+        height: 1px !important;
         opacity: 0 !important;
     }
     </style>
@@ -220,213 +248,163 @@ EXERCICES = [
 
 # --- 8. VUES ---
 
-def show_nav():
-    # Barre de navigation horizontale simulée par des colonnes
-    st.markdown('<div style="margin-top:-50px;"></div>', unsafe_allow_html=True)
-    cols = st.columns([1, 1, 1, 1, 1, 1.5])
+def metro_nav():
+    # NAVIGATION STYLE TABLETTE METRO AU MILIEU
+    st.markdown('<div class="metro-container">', unsafe_allow_html=True)
+    cols = st.columns([1, 1, 1])
     
     with cols[0]:
-        if st.button("🏠 ACCUEIL"): st.session_state.page = 'accueil'; st.rerun()
+        if st.button("🏠\nACCUEIL"): st.session_state.page = 'accueil'; st.rerun()
+        if st.button("ℹ️\nINFO"): st.session_state.page = 'info'; st.rerun()
     with cols[1]:
-        if st.button("ℹ️ INFO"): st.session_state.page = 'info'; st.rerun()
-    with cols[2]:
-        if st.button("❓ FAQ"): st.session_state.page = 'faq'; st.rerun()
-    with cols[3]:
-        if st.button("📞 CONTACT"): st.session_state.page = 'contact'; st.rerun()
-    with cols[4]:
-        # Bouton admin caché ou espace vide
-        st.write("")
-        
-    with cols[5]:
         if not st.session_state.user:
-            if st.button("🔐 SE CONNECTER"): st.session_state.page = 'login'; st.rerun()
+            st.markdown('<div class="login-tile">', unsafe_allow_html=True)
+            if st.button("🔐\nSE CONNECTER"): st.session_state.page = 'login'; st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
         else:
-            if st.button(f"🚪 {st.session_state.user['name'].upper()}"):
-                st.session_state.user = None; st.session_state.page = 'accueil'; st.rerun()
-    st.markdown('<hr style="border:1px solid rgba(255,255,255,0.05); margin-bottom:40px;">', unsafe_allow_html=True)
+            st.markdown('<div class="login-tile">', unsafe_allow_html=True)
+            if st.button(f"👤\n{st.session_state.user['name'].split()[0]}"): 
+                if st.session_state.user['role'] == 'teacher': st.session_state.page = 'teacher'
+                else: st.session_state.page = 'student_dash'
+                st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
+            if st.button("🚪\nQUITTER"): st.session_state.user = None; st.session_state.page = 'accueil'; st.rerun()
+    with cols[2]:
+        if st.button("❓\nFAQ"): st.session_state.page = 'faq'; st.rerun()
+        if st.button("📞\nCONTACT"): st.session_state.page = 'contact'; st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
-def show_header():
+def show_header_metro():
+    st.markdown('<div class="hb-logo">HB</div>', unsafe_allow_html=True)
     st.markdown("""
-        <div style="text-align:center; padding: 30px;">
-            <div class="hb-logo">HB</div>
-            <h4 style="opacity:0.6; text-transform:uppercase; letter-spacing:2px; margin-top:20px;">République Algérienne Démocratique et Populaire</h4>
-            <h1 style="font-size:2.8rem; margin:15px 0;">Institut National Spécialisé Belazzoug Athmane BBA 01</h1>
-            <p style="font-weight:700; color:white; letter-spacing:5px; text-transform:uppercase; opacity:0.8;">Plateforme d'évaluation certifiée ASR Pro</p>
-        </div>
+        <h1>ASR PRO - EXCELLENCE</h1>
+        <p style="text-align:center; opacity:0.6; font-size:1rem; letter-spacing:3px; text-transform:uppercase;">INSFP Belazzoug Athmane BBA 01</p>
+        <hr style="border:1px solid rgba(255,255,255,0.05); margin:30px 0;">
     """, unsafe_allow_html=True)
 
 def show_footer():
     st.markdown("""
         <div class="footer-wrapper">
-            <div class="footer-content">
-                <div class="hb-logo" style="width:65px; height:65px; font-size:1.6rem;">HB</div>
-                <h2 style="color:white !important; margin:20px 0; font-weight:900;">RÉALISÉ PAR HAITHEM BERKANE</h2>
-                <p style="font-size:1.2rem; font-weight:700;">INSFP Belazzoug Athmane BBA 01 | RADP 🇩🇿</p>
-                <div style="height:4px; background:var(--orange-light); width:200px; margin:30px auto;"></div>
-                <p style="opacity:0.5; letter-spacing:1px;">TOUS DROITS RÉSERVÉS © 2026</p>
+            <div style="text-align:center; color:white;">
+                <h3 style="font-weight:900;">HAITHEM BERKANE</h3>
+                <p style="opacity:0.7;">Institut National Spécialisé de la Formation Professionnelle | 2026</p>
             </div>
         </div>
     """, unsafe_allow_html=True)
 
-def audit_results_detailed(data):
-    st.markdown("### 🔍 Audit Approfondi de la Copie")
-    for ex in EXERCICES:
-        with st.expander(f"Exercice {ex['id']} : {ex['titre']}"):
-            col_q, col_c = st.columns([1, 1.5])
-            with col_q:
-                st.markdown("#### ✅ Validation Théorique")
-                for q in ex['questions']:
-                    user_ans = data.get('answers', {}).get(q['id'], "Non répondu")
-                    is_correct = str(user_ans) == str(q['correct'])
-                    color = "#10b981" if is_correct else "#ef4444"
-                    st.markdown(f"""<div style="padding:10px; border-left:5px solid {color}; background:rgba(255,255,255,0.03); margin-bottom:12px;">
-                        <small style="color:gray;">{q['text']}</small><br><b>Saisi : {user_ans}</b><br><small>Attendu : {q['correct']}</small></div>""", unsafe_allow_html=True)
-            with col_c:
-                st.markdown("#### 💻 Script Python Implémenté")
-                code = data.get('codes', {}).get(str(ex['id']), "")
-                st.code(code, "python")
-
+# VUES CONTENU
 def teacher_dash():
-    show_header()
+    show_header_metro()
     u_docs = get_col('users').where('role', '==', 'student').get()
     r_docs = get_col('results').get()
     u_list = [u.to_dict() for u in u_docs]; r_list = [r.to_dict() for r in r_docs]
     
-    t1, t2, t3 = st.tabs(["📊 ANALYSE STATISTIQUE", "👥 GESTION SECTION", "📑 AUDIT DES COPIES"])
-    
+    t1, t2, t3 = st.tabs(["📊 STATS", "👥 USERS", "📑 AUDIT"])
     with t1:
-        st.markdown("### 🔒 Contrôle Administratif")
+        st.markdown('<div class="white-card">', unsafe_allow_html=True)
         cl1, cl2 = st.columns([2, 1])
-        cl1.info(f"État de l'accès : **{'OUVERT' if st.session_state.exam_open else 'FERMÉ'}**")
-        if cl2.button("BASQUER ÉTAT SESSION"):
+        cl1.info(f"Session : **{'OUVERT' if st.session_state.exam_open else 'FERMÉ'}**")
+        if cl2.button("BASCULER"):
             ns = not st.session_state.exam_open
             db.collection('artifacts').document(PROJET_ID).collection('public').document('data').collection('settings').document('status').update({'is_open': ns})
             st.session_state.exam_open = ns; st.rerun()
-            
-        st.divider(); col_m = st.columns(4)
-        col_m[0].metric("Inscrits", len(u_list)); col_m[1].metric("Présents", len(r_list))
-        col_m[2].metric("Absents", max(0, len(u_list) - len(r_list)))
-        col_m[3].metric("Moyenne", f"{pd.DataFrame(r_list)['score'].mean():.2f}" if r_list else "0.00")
-            
-    with t2:
-        c_i1, c_i2 = st.columns(2)
-        with c_i1:
-            st.markdown("#### 📥 Importation de Liste")
-            out_ex = io.BytesIO(); pd.DataFrame(columns=["Nom Complet"]).to_excel(out_ex, index=False)
-            st.download_button("📂 TÉLÉCHARGER MODÈLE EXCEL", out_ex.getvalue(), "modele_asr.xlsx")
-            up_f = st.file_uploader("🚀 IMPORTER SECTION (XLSX)", type=['xlsx'])
-            if up_f and st.button("LANCER L'IMPORTATION"):
-                df = pd.read_excel(up_f)
-                for name in df.iloc[:, 0].dropna():
-                    uid = name.lower().replace(" ", ".") + str(random.randint(10,99))
-                    get_col('users').add({"name": name, "username": uid, "password": generate_pw(), "role": "student"})
-                st.rerun()
-        with c_i2:
-            st.markdown("#### 📜 Fiches d'accès")
-            if u_list: st.download_button("📥 GÉNÉRER FICHES ACCÈS (PDF)", generate_pdf_credentials(u_list), "Acces_ASR_Pro.pdf")
-            st.dataframe(pd.DataFrame(u_list)[['name', 'username', 'password']], use_container_width=True)
-            
+        st.divider(); col_m = st.columns(3)
+        col_m[0].metric("Inscrits", len(u_list)); col_m[1].metric("Rendus", len(r_list))
+        col_m[2].metric("Moyenne", f"{pd.DataFrame(r_list)['score'].mean():.2f}" if r_list else "0.00")
+        st.markdown('</div>', unsafe_allow_html=True)
     with t3:
         if r_list:
-            df_res = pd.DataFrame([{"ID": r.id, "Nom": r.to_dict()['name'], "Note": r.to_dict()['score']} for r in r_docs])
-            sel = st.dataframe(df_res.drop(columns=["ID"]), use_container_width=True, on_select="rerun", selection_mode="single-row")
-            if sel and sel.selection.rows:
-                doc_t = r_docs[sel.selection.rows[0]]; data = doc_t.to_dict()
-                st.markdown(f'<div class="report-card"><h2>CANDIDAT : {data["name"]}</h2><h1>Note Finale : {data["score"]} / 20</h1></div>', unsafe_allow_html=True)
-                st.divider(); audit_results_detailed(data)
+            df_res = pd.DataFrame([{"Nom": r.to_dict()['name'], "Note": r.to_dict()['score']} for r in r_docs])
+            st.dataframe(df_res, use_container_width=True)
     show_footer()
 
 def exam_view():
-    if not st.session_state.exam_open: show_header(); st.error("🔒 Session verrouillée par l'enseignant."); show_footer(); return
-    show_header(); step = st.session_state.step; ex = EXERCICES[step]; st.progress((step + 1) / 4); st.info(ex['enonce'])
-    
-    st.session_state.codes[ex['id']] = st.text_area("Console de Développement Python (Logiciel 4/5) :", height=400, key=f"c_{ex['id']}")
-    st.markdown("---"); st.markdown(f"#### **QUESTION THÉORIQUE :** {ex['questions'][0]['text']}")
+    if not st.session_state.exam_open: show_header_metro(); st.error("🔒 Session verrouillée."); return
+    show_header_metro(); step = st.session_state.step; ex = EXERCICES[step]
+    st.progress((step + 1) / 4)
+    st.markdown(f'<div class="white-card"><h4>{ex["titre"]}</h4><p>{ex["enonce"]}</p></div>', unsafe_allow_html=True)
+    st.session_state.codes[ex['id']] = st.text_area("Console Python :", height=300, key=f"c_{ex['id']}")
     
     for q in ex['questions']:
-        if q['type'] == 'choice': st.session_state.answers[q['id']] = st.radio(q['text'], q['options'], key=f"ans_{q['id']}", label_visibility="hidden")
+        if q['type'] == 'choice': st.session_state.answers[q['id']] = st.radio(q['text'], q['options'], key=f"ans_{q['id']}")
         else: st.session_state.answers[q['id']] = st.number_input(q['text'], key=f"ans_{q['id']}", value=0)
     
-    st.markdown('<div class="main-btn">', unsafe_allow_html=True)
-    if st.button("EXERCICE SUIVANT ➡️" if step < 3 else "🎯 TRANSMETTRE LA COPIE FINALE"):
+    st.markdown('<div class="main-action">', unsafe_allow_html=True)
+    if st.button("SUIVANT ➡️" if step < 3 else "🎯 TERMINER"):
         st.session_state.durations[ex['id']] = round(time.time() - st.session_state.ex_start_time, 1)
         if step < 3: st.session_state.step += 1; st.session_state.ex_start_time = time.time(); st.rerun()
         else:
-            total, br, cpm_d = 0, {}, {}
+            total = 0
             for e in EXERCICES:
                 pts_q = sum(1.0/len(e['questions']) for q in e['questions'] if str(st.session_state.answers.get(q['id'])) == str(q['correct']))
                 code_val = st.session_state.codes.get(e['id'], "").strip(); pts_c = 4.0 if len(code_val) > 15 else 0
-                dur = st.session_state.durations.get(e['id'], 1); cpm = (len(code_val) / (dur/60)) if dur > 0 else 0
-                cpm_d[str(e['id'])] = cpm; ex_s = pts_q + pts_c
-                br[str(e['id'])] = round(ex_s, 2); total += ex_s
-            get_col('results').add({"username": str(st.session_state.user['username']), "name": str(st.session_state.user['name']), "score": round(total, 1), "breakdown": br, "answers": st.session_state.answers, "codes": {str(k):v for k,v in st.session_state.codes.items()}, "cpm_data": cpm_d, "timestamp": time.time(), "cheats": st.session_state.cheats})
+                total += (pts_q + pts_c)
+            get_col('results').add({"username": st.session_state.user['username'], "name": st.session_state.user['name'], "score": round(total, 1), "timestamp": time.time()})
             st.session_state.page = "student_dash"; st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
 def login_view():
-    show_header()
-    st.markdown('<div class="white-card" style="max-width:550px; margin:auto;">', unsafe_allow_html=True)
-    st.markdown('<h2 style="text-align:center; margin-bottom:30px; font-weight:900;">Accès Sécurisé à la Session</h2>', unsafe_allow_html=True)
+    show_header_metro()
+    st.markdown('<div class="white-card" style="max-width:500px; margin:auto;">', unsafe_allow_html=True)
     u = st.text_input("Identifiant ARS"); p = st.text_input("Mot de passe", type="password")
-    st.markdown('<div class="main-btn">', unsafe_allow_html=True)
-    if st.button("OUVRIR LE TERMINAL D'EXAMEN"):
+    st.markdown('<div class="main-action">', unsafe_allow_html=True)
+    if st.button("VALIDER L'ACCÈS"):
         if u == "admin" and p == "admin": 
-            st.session_state.user = {"name": "Administrateur", "role": "teacher", "username": "admin"}
+            st.session_state.user = {"name": "Enseignant Admin", "role": "teacher", "username": "admin"}
             st.session_state.page = "teacher"; st.rerun()
         docs = get_col('users').where('username', '==', u).where('password', '==', p).get()
         if docs: 
             st.session_state.user = docs[0].to_dict()
             st.session_state.page = "student_dash"; st.rerun()
-        else: st.error("Identifiants incorrects ou compte non activé.")
+        else: st.error("Identifiants incorrects.")
     st.markdown('</div>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True); show_footer()
 
 def student_dash():
-    show_header(); u = st.session_state.user; st.markdown(f"<h1>Session de : {u['name']}</h1>", unsafe_allow_html=True)
+    show_header_metro()
+    u = st.session_state.user
     res_docs = get_col('results').where('username', '==', u['username']).get()
     if res_docs: 
-        res = res_docs[0].to_dict(); st.success(f"### ÉVALUATION TERMINÉE : NOTE OBTENUE {res['score']} / 20")
-        audit_results_detailed(res)
+        res = res_docs[0].to_dict(); st.success(f"### NOTE OBTENUE : {res['score']} / 20")
     elif st.session_state.exam_open:
-        st.markdown('<div class="main-btn">', unsafe_allow_html=True)
-        if st.button("🚀 DÉMARRER LE CHRONOMÈTRE DE L'ÉPREUVE"): 
+        st.markdown('<div class="main-action">', unsafe_allow_html=True)
+        if st.button("🚀 DÉMARRER L'ÉVALUATION"): 
             st.session_state.page = "exam"; st.session_state.ex_start_time = time.time(); st.rerun()
         st.markdown('</div>', unsafe_allow_html=True)
-    else: st.warning("🔒 L'examen est verrouillé par l'administration."); show_footer()
+    else: st.warning("🔒 Session verrouillée."); show_footer()
 
 def accueil_view():
-    show_header()
+    show_header_metro()
     st.markdown("""
         <div class="white-card">
-            <h1 style="font-weight:900; margin-bottom:25px;">Bienvenue sur le Portail Académique ASR</h1>
-            <p style="font-size:1.6rem; line-height:1.7; color:#444;">
-                Cette plateforme est réservée aux évaluations certifiées de l'INSFP Belazzoug Athmane de Bordj Bou Arreridj.<br><br>
-                <b>Instructions importantes :</b><br>
-                1. Connectez-vous via le menu en haut à droite.<br>
-                2. Ne changez pas d'onglet une fois l'épreuve lancée.<br>
-                3. Le barème favorise l'implémentation algorithmique (4 points par exercice).
-            </p>
+            <h2 style="text-align:center; font-weight:900;">Portail Académique ASR</h2>
+            <p style="text-align:center;">Bienvenue sur l'infrastructure d'évaluation de l'INSFP BBA 01.</p>
         </div>
-    """, unsafe_allow_html=True); show_footer()
+    """, unsafe_allow_html=True)
+    metro_nav()
+    show_footer()
 
-# --- 9. ROUTAGE PRINCIPAL ---
-show_nav() # On affiche toujours la navigation horizontale
-
+# --- 9. ROUTAGE ---
 p = st.session_state.page
 if p == 'teacher': teacher_dash()
 elif p == 'exam': exam_view()
 elif p == 'student_dash': student_dash()
 elif p == 'login': login_view()
-elif p == 'info':
-    show_header(); st.markdown('<div class="white-card"><h2>Modalités de l\'Épreuve Professionnelle</h2><p style="font-size:1.4rem;">L\'épreuve ASR Pro dure 60 minutes. Chaque exercice est noté sur 5 points répartis comme suit : 1 point pour la précision théorique (QCM) et 4 points pour la validité et l\'élégance du script Python implémenté.</p></div>', unsafe_allow_html=True); show_footer()
-elif p == 'faq':
-    show_header(); st.markdown('<div class="white-card"><h2>Foire Aux Questions (FAQ)</h2><p style="font-size:1.3rem;"><b>Q: Que se passe-t-il si je change d\'onglet ?</b><br>R: Le système enregistre chaque perte de focus. Plus de 3 sorties peuvent entraîner une alerte d\'intégrité.<br><br><b>Q: Mon code est-il sauvegardé ?</b><br>R: Oui, au passage de chaque exercice.</p></div>', unsafe_allow_html=True); show_footer()
-elif p == 'contact':
-    show_header(); st.markdown('<div class="white-card"><h2>Support Technique & Pédagogique</h2><p style="font-size:1.3rem;">📧 haithemcomputing@gmail.com<br>📍 INSFP Belazzoug Athmane BBA 01 - Département Informatique<br>👤 Responsable : Haithem BERKANE</p></div>', unsafe_allow_html=True); show_footer()
-else: accueil_view()
+elif p == 'accueil': accueil_view()
+elif p in ['info', 'faq', 'contact']:
+    show_header_metro()
+    st.markdown('<div class="white-card">', unsafe_allow_html=True)
+    if p == 'info': st.markdown("<h2>Infos</h2><p>Examen de 60 min. 1pt théorie, 4pts code.</p>")
+    if p == 'faq': st.markdown("<h2>FAQ</h2><p>Le système détecte chaque sortie d'onglet.</p>")
+    if p == 'contact': st.markdown("<h2>Contact</h2><p>📧 haithemcomputing@gmail.com</p>")
+    st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-action">', unsafe_allow_html=True)
+    if st.button("⬅️ RETOUR"): st.session_state.page = 'accueil'; st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
+    show_footer()
 
-# --- 10. BOUTON SÉCURITÉ (SUPPRESSION VISUELLE RADICALE) ---
-st.markdown('<div class="hidden-trigger">', unsafe_allow_html=True)
+# --- 10. SÉCURITÉ INVISIBLE ---
+st.markdown('<div class="hidden-zone">', unsafe_allow_html=True)
 if st.button("INTEGRITY_TRIGGER", key="cheat_trigger_final"):
     st.session_state.cheats += 1
 st.markdown('</div>', unsafe_allow_html=True)
