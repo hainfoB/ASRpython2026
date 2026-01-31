@@ -19,42 +19,30 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 2. SÉCURITÉ & PROTECTION (ANTI-TRICHE JS) ---
-# Version simplifiée et robuste pour éviter les bugs d'affichage
+# --- 2. SÉCURITÉ (JS UNIQUEMENT - PAS DE BOUTON) ---
+# Protection basique (Clic droit, Copier/Coller) sans trigger Python
 st.components.v1.html("""
     <script>
     document.addEventListener('contextmenu', event => event.preventDefault());
     document.addEventListener('copy', e => e.preventDefault());
     document.addEventListener('paste', e => e.preventDefault());
-    
-    function checkFocus() {
-        const buttons = window.parent.document.querySelectorAll('button');
-        buttons.forEach(btn => {
-            // On cherche le bouton par son texte exact pour le cliquer
-            if (btn.innerText === 'INTEGRITY_CHECK') {
-                btn.click();
-            }
-        });
-    }
-
-    window.addEventListener('blur', checkFocus);
     </script>
 """, height=0)
 
-# --- 3. DESIGN SYSTEM (CSS NETTOYÉ) ---
+# --- 3. DESIGN SYSTEM (CSS AVANCÉ) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
     
-    /* COULEURS ET POLICES */
     :root {
         --bg-dark: #0a192f;
         --bg-panel: #112240;
-        --primary: #c2410c; /* Orange foncé */
-        --accent: #f57c00; /* Orange vif */
+        --primary: #c2410c;
+        --accent: #f57c00;
         --text-white: #ffffff;
     }
 
+    /* GLOBAL */
     html, body, [data-testid="stAppViewContainer"], .main {
         background-color: var(--bg-dark) !important;
         color: var(--text-white) !important;
@@ -67,65 +55,121 @@ st.markdown("""
         border-right: 1px solid rgba(255,255,255,0.05);
     }
 
-    /* BOUTONS NAVIGATION (Sidebar) */
-    [data-testid="stSidebar"] .stButton button {
-        background: transparent !important;
-        border: none !important;
-        border-bottom: 1px solid rgba(255,255,255,0.1) !important;
-        color: rgba(255,255,255,0.8) !important;
-        text-align: left !important;
-        width: 100%;
-        padding: 15px !important;
+    /* LOGO DANS LA SIDEBAR */
+    .sidebar-logo-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 30px;
+        padding-top: 20px;
     }
-    [data-testid="stSidebar"] .stButton button:hover {
-        border-left: 4px solid var(--accent) !important;
-        color: var(--accent) !important;
-        background: rgba(255,255,255,0.05) !important;
+    .sidebar-logo {
+        width: 100px;
+        height: 100px;
+        background: white;
+        border-radius: 50%;
+        border: 4px solid var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0047AB;
+        font-weight: 900;
+        font-size: 32px;
+        box-shadow: 0 0 20px rgba(245, 124, 0, 0.3);
     }
 
-    /* BOUTONS PRINCIPAUX */
-    .stButton > button {
+    /* BOUTONS NAVIGATION (Sidebar) - DIMENSIONS FIXES */
+    [data-testid="stSidebar"] .stButton button {
+        background: transparent !important;
+        border: 1px solid rgba(255,255,255,0.05) !important;
+        border-left: 3px solid transparent !important;
+        color: rgba(255,255,255,0.8) !important;
+        text-align: left !important;
+        width: 100% !important;
+        height: 60px !important; /* HAUTEUR FIXE POUR TOUS */
+        padding: 0 20px !important;
+        display: flex !important;
+        align-items: center !important;
+        margin-bottom: 10px !important;
+        border-radius: 8px !important;
+        font-size: 16px !important;
+        font-weight: 600 !important;
+    }
+    [data-testid="stSidebar"] .stButton button:hover {
+        border-left: 3px solid var(--accent) !important;
+        background: rgba(255,255,255,0.05) !important;
+        color: var(--accent) !important;
+    }
+    /* Style actif simulé (si besoin) */
+    [data-testid="stSidebar"] .stButton button:focus {
+        border-color: var(--accent) !important;
+        color: var(--accent) !important;
+    }
+
+    /* HEADER EN HAUT DE PAGE (SANS LOGO) */
+    .custom-header {
+        text-align: center;
+        padding: 30px 20px;
+        background: radial-gradient(circle at center, #1e3a8a 0%, #0a192f 80%);
+        border-bottom: 2px solid var(--accent);
+        margin-bottom: 40px;
+        border-radius: 0 0 15px 15px;
+    }
+    .header-title { 
+        font-size: 2.2rem; 
+        font-weight: 900; 
+        color: var(--accent); 
+        margin: 0; 
+        text-transform: uppercase; 
+        letter-spacing: 2px;
+    }
+    .header-subtitle { 
+        font-size: 0.9rem; 
+        color: rgba(255,255,255,0.7); 
+        text-transform: uppercase; 
+        letter-spacing: 1px; 
+        margin-bottom: 5px;
+    }
+    .header-inst {
+        margin-top: 10px; 
+        font-weight: 700; 
+        color: white; 
+        font-size: 1.1rem;
+    }
+
+    /* BOUTONS PRINCIPAUX (CONTENU) */
+    .main .stButton > button {
         background-color: var(--primary) !important;
         color: white !important;
         border: none;
-        padding: 0.75rem 1.5rem;
+        padding: 0.8rem 2rem;
+        height: auto !important;
         border-radius: 6px;
-        font-weight: 700;
+        font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 1px;
         transition: all 0.3s;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     }
-    .stButton > button:hover {
+    .main .stButton > button:hover {
         background-color: var(--accent) !important;
-        box-shadow: 0 4px 12px rgba(245, 124, 0, 0.3);
+        transform: translateY(-2px);
     }
 
-    /* HEADER PERSONNALISÉ */
-    .custom-header {
-        text-align: center;
-        padding: 40px 20px;
-        background: radial-gradient(circle at center, #1e3a8a 0%, #0a192f 70%);
-        border-bottom: 2px solid var(--accent);
-        margin-bottom: 30px;
-        border-radius: 0 0 20px 20px;
+    /* CONTACT SIMPLE */
+    .contact-line {
+        font-size: 1.2rem;
+        margin-bottom: 15px;
+        color: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
-    .logo-circle {
-        width: 80px; height: 80px; background: white; border-radius: 50%;
-        margin: 0 auto 15px auto; display: flex; align-items: center; justify-content: center;
-        border: 4px solid var(--accent); color: #0047AB; font-weight: 900; font-size: 24px;
+    .contact-emoji {
+        font-size: 1.5rem;
+        margin-right: 15px;
     }
-    .header-title { font-size: 2.5rem; font-weight: 900; color: var(--accent); margin: 0; }
-    .header-subtitle { font-size: 1rem; color: rgba(255,255,255,0.8); text-transform: uppercase; letter-spacing: 2px; }
 
-    /* CARTE BLANCHE CONTENU */
-    .content-card {
-        background: white; color: #0f172a; padding: 30px; border-radius: 12px;
-        border-left: 8px solid var(--accent); margin-bottom: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-    .content-card h3 { color: var(--primary); margin-top: 0; }
-
-    /* FOOTER OFFICIEL (STYLE FIXE) */
+    /* FOOTER */
     .footer-official {
         margin-top: 80px;
         padding: 60px 20px;
@@ -133,31 +177,9 @@ st.markdown("""
         border-top: 4px solid var(--accent);
         text-align: center;
     }
-    .f-name { font-size: 1.4rem; font-weight: 800; color: white; margin-bottom: 10px; }
+    .f-name { font-size: 1.5rem; font-weight: 800; color: white; margin-bottom: 10px; }
     .f-line { font-size: 1.1rem; color: #cbd5e1; margin-bottom: 5px; }
     .f-bottom { margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.9rem; color: #64748b; letter-spacing: 1px; font-weight: bold; }
-
-    /* CARTE DE VISITE SIMPLE */
-    .contact-simple {
-        background-color: var(--bg-panel);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 16px;
-        padding: 40px;
-        max-width: 600px;
-        margin: 20px auto;
-        text-align: center;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-    }
-    .c-name { color: var(--accent); font-size: 2rem; font-weight: 900; margin-bottom: 5px; }
-    .c-role { color: #94a3b8; font-weight: 700; text-transform: uppercase; font-size: 0.9rem; letter-spacing: 2px; margin-bottom: 30px; }
-    .c-item { display: flex; align-items: center; justify-content: center; margin-bottom: 15px; font-size: 1.1rem; }
-    .c-icon { margin-right: 10px; color: var(--accent); }
-
-    /* CACHER LE BOUTON SÉCURITÉ VISUELLEMENT MAIS LE GARDER DANS LE DOM */
-    /* On cible le bouton spécifique qui contient le texte INTEGRITY_CHECK */
-    /* Note : Streamlit ne permet pas de cibler par texte en CSS pur facilement, 
-       donc on le met dans un container invisible via st.markdown */
-    
     </style>
 """, unsafe_allow_html=True)
 
@@ -173,7 +195,7 @@ if not firebase_admin._apps:
                 cred = credentials.Certificate(firebase_secrets)
                 firebase_admin.initialize_app(cred)
             except:
-                pass # On évite de stopper l'app si pas de secrets en local pour le rendu UI
+                pass 
     except Exception as e:
         pass
 
@@ -191,7 +213,7 @@ if 'exam_open' not in st.session_state: st.session_state.exam_open = True
 if 'ex_start_time' not in st.session_state: st.session_state.ex_start_time = time.time()
 if 'durations' not in st.session_state: st.session_state.durations = {}
 
-# --- 6. DONNÉES EXAMEN (PDF) ---
+# --- 6. DONNÉES EXAMEN ---
 EXERCICES = [
     {
         "id": 1, 
@@ -235,12 +257,12 @@ EXERCICES = [
 # --- 7. COMPOSANTS D'INTERFACE ---
 
 def show_header():
+    # Header remonté, sans le logo (qui est maintenant dans la sidebar)
     st.markdown("""
         <div class="custom-header">
-            <div class="logo-circle">HB</div>
             <div class="header-subtitle">République Algérienne Démocratique et Populaire</div>
             <h1 class="header-title">ASR PRO EXCELLENCE</h1>
-            <p style="margin-top:10px; font-weight:bold; color:white;">Institut National Spécialisé Belazzoug Athmane BBA 01</p>
+            <div class="header-inst">Institut National Spécialisé Belazzoug Athmane BBA 01</div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -257,21 +279,14 @@ def show_footer():
         </div>
     """, unsafe_allow_html=True)
 
-# BOUTON SÉCURITÉ CACHÉ (Méthode CSS Inline pour garantir le masquage)
-# On le place dans un conteneur div avec style inline pour être sûr qu'il ne s'affiche pas
-st.markdown('<div style="opacity:0; height:0; width:0; overflow:hidden; position:absolute; left:-9999px;">', unsafe_allow_html=True)
-if st.button("INTEGRITY_CHECK", key="integrity_btn"):
-    st.session_state.cheats += 1
-st.markdown('</div>', unsafe_allow_html=True)
-
 # --- 8. VUES ---
 
 def accueil_view():
     show_header()
     st.markdown("""
-        <div class="content-card" style="text-align:center;">
+        <div style="background:white; color:#0f172a; padding:40px; border-radius:12px; border-left:8px solid #f57c00; text-align:center;">
             <h1>Bienvenue sur le Portail ASR Pro</h1>
-            <p>Plateforme d'évaluation certifiée pour le module Prog DevNet & Scripts.</p>
+            <p style="font-size:1.2rem;">Plateforme d'évaluation certifiée pour le module Prog DevNet & Scripts.</p>
             <p>Veuillez utiliser le menu latéral pour naviguer.</p>
         </div>
     """, unsafe_allow_html=True)
@@ -282,9 +297,9 @@ def enonce_view():
     st.markdown("<h2 style='text-align:center; color:#f57c00; margin-bottom:30px;'>📜 ÉNONCÉS DE L'EXAMEN</h2>", unsafe_allow_html=True)
     for ex in EXERCICES:
         st.markdown(f"""
-            <div class="content-card">
-                <h3>EXERCICE {ex['id']} : {ex['titre']}</h3>
-                <p style="white-space: pre-wrap; font-family:monospace; background:#f8f9fa; padding:15px; border-radius:5px;">{ex['enonce']}</p>
+            <div style="background:white; color:#0f172a; padding:30px; border-radius:12px; border-left:8px solid #f57c00; margin-bottom:20px;">
+                <h3 style="color:#c2410c; margin-top:0;">EXERCICE {ex['id']} : {ex['titre']}</h3>
+                <p style="white-space: pre-wrap; background:#f1f5f9; padding:15px; border-radius:8px; font-family:monospace;">{ex['enonce']}</p>
                 <p style="text-align:right; font-weight:bold; color:#c2410c;">Note : {ex['points']} Points</p>
             </div>
         """, unsafe_allow_html=True)
@@ -292,17 +307,17 @@ def enonce_view():
 
 def contact_view():
     show_header()
+    # Contact simple avec Emojis
     st.markdown("""
-        <div class="contact-simple">
-            <div class="c-name">Ahmed Haithem BERKANE</div>
-            <div class="c-role">PSFEP CIP - Expert ASR Pro</div>
+        <div style="background:#112240; border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:50px; max-width:600px; margin:0 auto; text-align:center;">
+            <h2 style="color:#f57c00; font-weight:900; font-size:2.5rem; margin-bottom:5px;">Ahmed Haithem BERKANE</h2>
+            <p style="color:#94a3b8; font-weight:700; text-transform:uppercase; letter-spacing:2px; margin-bottom:40px;">PSFEP CIP - Expert ASR Pro</p>
             
-            <div style="margin-top:30px;">
-                <div class="c-item"><span class="c-icon">📱</span> +213 699 102 523</div>
-                <div class="c-item"><span class="c-icon">📧</span> haithemcomputing@gmail.com</div>
-                <div class="c-item"><span class="c-icon">🔗</span> Facebook & LinkedIn : Haithem BERKANE</div>
-                <div class="c-item"><span class="c-icon">📍</span> INSFP Belazzoug Athmane BBA 01</div>
-            </div>
+            <div class="contact-line"><span class="contact-emoji">📞</span> +213 699 102 523</div>
+            <div class="contact-line"><span class="contact-emoji">📧</span> haithemcomputing@gmail.com</div>
+            <div class="contact-line"><span class="contact-emoji">🔵</span> Facebook : Haithem BERKANE</div>
+            <div class="contact-line"><span class="contact-emoji">💼</span> LinkedIn : Haithem BERKANE</div>
+            <div class="contact-line"><span class="contact-emoji">📍</span> INSFP Belazzoug Athmane BBA 01</div>
         </div>
     """, unsafe_allow_html=True)
     show_footer()
@@ -320,25 +335,27 @@ def faq_view():
 
 def login_view():
     show_header()
-    st.markdown("<div class='content-card' style='max-width:500px; margin:0 auto;'>", unsafe_allow_html=True)
-    st.markdown("<h2 style='text-align:center;'>Connexion</h2>", unsafe_allow_html=True)
-    u = st.text_input("Identifiant")
-    p = st.text_input("Mot de passe", type="password")
+    st.markdown("""
+        <div style="background:white; color:#0f172a; padding:30px; border-radius:12px; border-left:8px solid #f57c00; max-width:500px; margin:0 auto;">
+            <h2 style="text-align:center;">Connexion</h2>
+        </div>
+        """, unsafe_allow_html=True)
     
-    if st.button("SE CONNECTER", use_container_width=True):
-        if u == "admin" and p == "admin":
-            st.session_state.user = {"name": "ADMINISTRATEUR", "role": "teacher", "username": "admin"}
-            st.session_state.page = 'teacher'
-            st.rerun()
-        # Simulation connexion étudiant (Remplacer par appel Firebase réel si config OK)
-        elif u and p:
-             # Simulation simple si Firebase non configuré
-             st.session_state.user = {"name": f"Stagiaire {u}", "role": "student", "username": u}
-             st.session_state.page = 'student_dash'
-             st.rerun()
-        else:
-            st.error("Veuillez remplir les champs.")
-    st.markdown("</div>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1,2,1])
+    with col2:
+        u = st.text_input("Identifiant")
+        p = st.text_input("Mot de passe", type="password")
+        if st.button("SE CONNECTER", use_container_width=True):
+            if u == "admin" and p == "admin":
+                st.session_state.user = {"name": "ADMINISTRATEUR", "role": "teacher", "username": "admin"}
+                st.session_state.page = 'teacher'
+                st.rerun()
+            elif u and p:
+                 st.session_state.user = {"name": f"Stagiaire {u}", "role": "student", "username": u}
+                 st.session_state.page = 'student_dash'
+                 st.rerun()
+            else:
+                st.error("Veuillez remplir les champs.")
     show_footer()
 
 def student_dash():
@@ -359,7 +376,6 @@ def student_dash():
     show_footer()
 
 def exam_view():
-    # Logique simple d'examen
     step = st.session_state.step
     if step >= len(EXERCICES):
         st.success("Examen terminé ! Vos réponses ont été enregistrées.")
@@ -393,12 +409,16 @@ def teacher_dash():
     show_header()
     st.title("Tableau de Bord Enseignant")
     st.info("Gestion des sessions et des notes.")
-    # (Logique enseignant simplifiée pour l'affichage)
     show_footer()
 
 # --- 9. ROUTAGE (SIDEBAR) ---
 with st.sidebar:
-    st.markdown("<div style='text-align:center; font-weight:900; font-size:24px; color:white; margin-bottom:20px;'>HB</div>", unsafe_allow_html=True)
+    # LOGO EN ENTIER AU DESSUS DU MENU
+    st.markdown("""
+        <div class="sidebar-logo-container">
+            <div class="sidebar-logo">HB</div>
+        </div>
+    """, unsafe_allow_html=True)
     
     if st.button("🏠 ACCUEIL"): st.session_state.page = 'accueil'; st.rerun()
     if st.button("📜 ÉNONCÉS"): st.session_state.page = 'info'; st.rerun()
