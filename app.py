@@ -75,10 +75,10 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
 
-    /* Suppression de la sidebar native car on utilise la navbar */
+    /* Suppression de la sidebar native */
     [data-testid="stSidebar"] { display: none; }
     
-    /* STYLE DES BOUTONS (ORANGE FONCÉ, TEXTE BLANC, HOVER CLAIR) */
+    /* BOUTONS (ORANGE FONCÉ, TEXTE BLANC) */
     .stButton > button, [data-testid="stFormSubmitButton"] > button, .stDownloadButton > button {
         background-color: var(--orange-dark) !important;
         color: white !important;
@@ -88,6 +88,7 @@ st.markdown("""
         font-weight: 800 !important;
         text-transform: uppercase !important;
         width: 100% !important;
+        font-size: 1.1rem !important;
         transition: all 0.3s ease !important;
     }
 
@@ -99,26 +100,49 @@ st.markdown("""
 
     /* HEADER & TEXTES */
     .hb-logo {
-        width: 80px; height: 80px; background: white;
+        width: 90px; height: 90px; background: white;
         border: 6px solid var(--orange-light); border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
-        color: var(--hb-blue); font-weight: 900; font-size: 2.2rem;
-        box-shadow: 0 0 20px rgba(245, 124, 0, 0.5);
+        color: var(--hb-blue); font-weight: 900; font-size: 2.5rem;
+        box-shadow: 0 0 25px rgba(245, 124, 0, 0.6);
     }
 
-    [data-testid="stAlert"] {
-        background-color: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid var(--orange-light) !important;
+    /* LABELS DES WIDGETS (Input, Select...) - BLANCS ET GRANDS */
+    [data-testid="stWidgetLabel"] p, label {
+        color: #ffffff !important; /* Force le blanc */
+        font-size: 1.5rem !important; /* Agrandissement écriture */
+        font-weight: 700 !important;
+        margin-bottom: 10px !important;
     }
     
+    /* Input text color fix */
+    .stTextInput input {
+        color: #333 !important;
+        font-weight: bold;
+    }
+
+    /* CARTES CONTENU (BLANCHES COMME DANS LA RÉFÉRENCE) */
     .white-card, [data-testid="stMetric"], .report-card {
         background-color: var(--white) !important;
-        padding: 30px !important;
-        border-radius: 12px !important;
-        border-left: 12px solid var(--orange-light) !important;
+        padding: 40px !important;
+        border-radius: 16px !important;
+        border-left: 10px solid var(--orange-light) !important;
         color: var(--midnight) !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+        margin-bottom: 20px;
     }
-    .white-card *, .report-card *, [data-testid="stMetric"] * { color: var(--midnight) !important; }
+    .white-card *, .report-card * { 
+        color: var(--midnight) !important; 
+    }
+    .white-card h1, .white-card h2, .white-card h3 {
+        color: var(--orange-dark) !important;
+    }
+
+    /* TEXTES GÉNÉRAUX SUR FOND SOMBRE */
+    p, li {
+        font-size: 1.2rem !important;
+        line-height: 1.6 !important;
+    }
 
     .capacity-bright {
         background: linear-gradient(135deg, #fffbeb 0%, #fff7ed 100%) !important;
@@ -126,7 +150,7 @@ st.markdown("""
         padding: 40px !important;
         border-radius: 20px !important;
         color: #92400e !important;
-        font-size: 2.4rem !important; 
+        font-size: 2rem !important; 
         font-weight: 900 !important;
         text-align: center;
     }
@@ -144,12 +168,14 @@ st.markdown("""
     .nav-fallback {
         background-color: var(--navy);
         padding: 15px;
-        border-radius: 10px;
+        border-radius: 12px;
         display: flex;
         justify-content: center;
-        gap: 20px;
-        margin-bottom: 30px;
-        border-bottom: 3px solid var(--orange-light);
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 40px;
+        border-bottom: 4px solid var(--orange-light);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.3);
     }
     
     div[data-testid="stButton"]:has(button:contains("INTEGRITY_TRIGGER")) {
@@ -170,7 +196,7 @@ if not firebase_admin._apps:
                 cred = credentials.Certificate(firebase_secrets)
                 firebase_admin.initialize_app(cred)
             except:
-                pass # Continue sans erreur bloquante pour le rendu UI
+                pass 
     except Exception as e:
         pass
 
@@ -185,7 +211,7 @@ def init_session():
             if k in ['step', 'cheats']: st.session_state[k] = 0
             elif k in ['answers', 'codes', 'durations']: st.session_state[k] = {}
             elif k == 'exam_open': st.session_state[k] = True
-            elif k == 'page': st.session_state[k] = 'Accueil'
+            elif k == 'page': st.session_state[k] = '🏠 Accueil'
             else: st.session_state[k] = None
 
 init_session()
@@ -251,8 +277,8 @@ def show_header():
                 <div class="hb-logo">HB</div>
             </div>
             <h4 style="opacity:0.7; letter-spacing:2px; text-transform:uppercase;">République Algérienne Démocratique et Populaire</h4>
-            <h1 style="color:#f57c00; font-size:2.4rem; margin:10px 0; font-weight:900;">Institut National Spécialisé Belazzoug Athmane BBA 01</h1>
-            <p style="font-weight:700; color:white; margin-top:10px; letter-spacing:5px;">PLATEFORME D'EXAMEN ASR PRO</p>
+            <h1 style="color:#f57c00; font-size:2.8rem; margin:15px 0; font-weight:900;">Institut National Spécialisé Belazzoug Athmane BBA 01</h1>
+            <p style="font-weight:700; color:white; margin-top:10px; letter-spacing:5px; font-size:1.5rem;">PLATEFORME D'EXAMEN ASR PRO</p>
         </div>
     """, unsafe_allow_html=True)
 
@@ -260,14 +286,15 @@ def show_footer():
     st.markdown("""
         <div class="footer-wrapper">
             <div class="footer-content">
-                <div class="footer-hb" style="width:65px; height:65px; background:white; border:4px solid #f57c00; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#0047AB; font-weight:900; font-size:1.6rem; margin-bottom:20px; box-shadow:0 4px 15px rgba(0,0,0,0.3);">HB</div>
-                <h2 style="color:white !important; margin-bottom:15px; font-weight:900; letter-spacing:1px;">RÉALISÉ PAR HAITHEM BERKANE TOUS DROITS RÉSERVÉS © 2026</h2>
-                <div style="font-size:1.3rem; font-weight:700; opacity:0.95; margin-bottom:10px;">Institut National Spécialisé Belazzoug Athmane BBA 01</div>
-                <p style="font-size:1rem; opacity:0.7; font-weight:400;">Ministère de la Formation et de l'Enseignement Professionnels 🇩🇿</p>
+                <div class="footer-hb" style="width:70px; height:70px; background:white; border:4px solid #f57c00; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#0047AB; font-weight:900; font-size:1.8rem; margin-bottom:20px; box-shadow:0 4px 15px rgba(0,0,0,0.3);">HB</div>
+                <h2 style="color:white !important; margin-bottom:15px; font-weight:900; letter-spacing:1px; font-size:1.8rem;">RÉALISÉ PAR HAITHEM BERKANE</h2>
+                <div style="font-size:1.4rem; font-weight:700; opacity:0.95; margin-bottom:10px;">Institut National Spécialisé Belazzoug Athmane BBA 01</div>
+                <p style="font-size:1.2rem; opacity:0.7; font-weight:400;">Ministère de la Formation et de l'Enseignement Professionnels 🇩🇿</p>
                 <div style="height:4px; background:#f57c00; width:200px; margin:35px auto; border-radius:10px;"></div>
-                <p style="font-size:1rem; opacity:0.7; font-weight:400;">République Algérienne Démocratique et Populaire 🇩🇿</p>
+                <p style="font-size:1.2rem; opacity:0.7; font-weight:400;">République Algérienne Démocratique et Populaire 🇩🇿</p>
                 
-                
+                <p style="font-size:1rem; opacity:0.5; letter-spacing:1px;">TOUS DROITS RÉSERVÉS © 2026</p>
+            </div>
         </div>
     """, unsafe_allow_html=True)
 
@@ -282,11 +309,12 @@ def audit_results_detailed(data):
                     user_ans = data.get('answers', {}).get(q['id'], "Non répondu")
                     is_correct = str(user_ans) == str(q['correct'])
                     color = "#10b981" if is_correct else "#ef4444"
+                    # ALERTE BLANCHE ET AGRANDIE
                     st.markdown(f"""
-                        <div style="padding:10px; border-radius:5px; border-left:4px solid {color}; margin-bottom:10px; background:rgba(255,255,255,0.03);">
-                            <small style="color:gray;">{q['text']}</small><br>
-                            <span style="color:{color}; font-weight:bold;">Saisi : {user_ans}</span><br>
-                            <small style="color:gray;">Attendu : {q['correct']}</small>
+                        <div style="padding:15px; border-radius:8px; border-left:6px solid {color}; margin-bottom:15px; background:rgba(255,255,255,0.05);">
+                            <small style="color:#ddd; font-size:1.1rem; font-weight:bold;">{q['text']}</small><br>
+                            <span style="color:white; font-weight:900; font-size:1.4rem;">Saisi : {user_ans}</span><br>
+                            <small style="color:#ddd; font-size:1.1rem;">Attendu : {q['correct']}</small>
                         </div>
                     """, unsafe_allow_html=True)
             with col_c:
@@ -354,7 +382,7 @@ def teacher_dash():
             sel = st.dataframe(df_res.drop(columns=["ID"]), use_container_width=True, on_select="rerun", selection_mode="single-row")
             if sel and sel.selection.rows:
                 doc_t = r_docs[sel.selection.rows[0]]; data = doc_t.to_dict()
-                st.markdown(f'<div class="report-card"><h2>COPIE : {data["name"]}</h2><h1>{data["score"]} / 20</h1></div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="white-card"><h2>COPIE : {data["name"]}</h2><h1>{data["score"]} / 20</h1></div>', unsafe_allow_html=True)
                 new_s = st.number_input("Ajuster Note :", 0.0, 20.0, float(data['score']), 0.25)
                 if st.button("SAUVEGARDER"):
                     get_col('results').document(doc_t.id).update({"score": new_s}); st.success("Mis à jour !"); time.sleep(1); st.rerun()
@@ -383,19 +411,20 @@ def exam_view():
                 br[str(e['id'])] = round(ex_s, 2); total += ex_s
             fs = max(0, total - (st.session_state.cheats * 3))
             get_col('results').add({"username": str(st.session_state.user['username']), "name": str(st.session_state.user['name']), "score": round(fs, 1), "breakdown": br, "answers": st.session_state.answers, "durations": {str(k):v for k,v in st.session_state.durations.items()}, "codes": {str(k):v for k,v in st.session_state.codes.items()}, "cpm_data": cpm_d, "timestamp": time.time(), "cheats": st.session_state.cheats})
-            st.session_state.page = "Espace Candidat"; st.rerun()
+            st.session_state.page = "👤 Espace Candidat"; st.rerun()
 
 def login_view():
     show_header()
-    st.markdown('<div class="white-card" style="max-width:500px; margin:auto;">', unsafe_allow_html=True)
-    st.markdown('<h2 style="text-align:center; margin-bottom:30px; font-weight:900;">Authentification Sécurisée</h2>', unsafe_allow_html=True)
+    # PAS DE WHITE-CARD ICI. Juste le titre en blanc pour aller sur le fond sombre.
+    st.markdown('<div style="max-width:500px; margin:auto;">', unsafe_allow_html=True)
+    st.markdown('<h2 style="text-align:center; margin-bottom:30px; font-weight:900; color:white;">Authentification Sécurisée</h2>', unsafe_allow_html=True)
     u = st.text_input("Identifiant ARS")
     p = st.text_input("Mot de passe", type="password")
     if st.button("ACCÉDER À LA SESSION"):
-        if u == "admin" and p == "admin": st.session_state.user = {"name": "Administrateur", "role": "teacher", "username": "admin"}; st.session_state.page = "Tableau de Bord"; st.rerun()
+        if u == "admin" and p == "admin": st.session_state.user = {"name": "Administrateur", "role": "teacher", "username": "admin"}; st.session_state.page = "📊 Tableau de Bord"; st.rerun()
         try:
             docs = get_col('users').where('username', '==', u).where('password', '==', p).get()
-            if docs: st.session_state.user = docs[0].to_dict(); st.session_state.page = "Espace Candidat"; st.rerun()
+            if docs: st.session_state.user = docs[0].to_dict(); st.session_state.page = "👤 Espace Candidat"; st.rerun()
             else: st.error("Identifiants incorrects.")
         except: st.error("Erreur de connexion. Vérifiez la configuration.")
     st.markdown('</div>', unsafe_allow_html=True); show_footer()
@@ -412,6 +441,7 @@ def student_dash():
 
 def accueil_view():
     show_header()
+    # WHITE-CARD conservée ici
     st.markdown("""
         <div class="white-card">
             <h1 style="font-weight:900; margin-bottom:20px;">Portail Académique ASR</h1>
@@ -424,6 +454,7 @@ def accueil_view():
 
 def enonce_view():
     show_header()
+    # WHITE-CARD conservée ici
     st.markdown('<div class="white-card"><h2>Énoncés & Modalités</h2><p>Le barème favorise l\'implémentation (4/5) et la théorie (1/5).</p></div>', unsafe_allow_html=True)
     for ex in EXERCICES:
         st.markdown(f"""
@@ -436,6 +467,7 @@ def enonce_view():
 
 def faq_view():
     show_header()
+    # WHITE-CARD conservée ici
     st.markdown("""
         <div class="white-card">
             <h2>FAQ - Foire Aux Questions</h2>
@@ -451,16 +483,16 @@ def faq_view():
 
 # --- 9. ROUTAGE AVEC ST_NAVBAR (OU FALLBACK) ---
 
-# Définition des pages
-pages = ["Accueil", "Énoncés", "FAQ"]
+# Définition des pages avec Émojis
+pages = ["🏠 Accueil", "📜 Énoncés", "❓ FAQ"]
 if st.session_state.user:
     if st.session_state.user.get('role') == 'teacher':
-        pages.append("Tableau de Bord")
+        pages.append("📊 Tableau de Bord")
     else:
-        pages.append("Espace Candidat")
-    pages.append("Déconnexion")
+        pages.append("👤 Espace Candidat")
+    pages.append("🚪 Déconnexion")
 else:
-    pages.append("Connexion")
+    pages.append("🔐 Connexion")
 
 # Tentative d'utilisation de streamlit-navigation-bar
 try:
@@ -477,10 +509,10 @@ try:
     selected_page = st_navbar(pages, styles=styles, options=options)
 
 except ImportError:
-    # Fallback CSS si la librairie n'est pas installée
+    # Fallback CSS
     st.markdown('<div class="nav-fallback">', unsafe_allow_html=True)
     cols = st.columns(len(pages))
-    selected_page = st.session_state.page # Par défaut garder la page actuelle
+    selected_page = st.session_state.page
     
     for i, p_name in enumerate(pages):
         with cols[i]:
@@ -489,9 +521,9 @@ except ImportError:
     st.markdown('</div>', unsafe_allow_html=True)
 
 # Gestion de la sélection
-if selected_page == "Déconnexion":
+if selected_page == "🚪 Déconnexion":
     st.session_state.user = None
-    st.session_state.page = "Accueil"
+    st.session_state.page = "🏠 Accueil"
     st.rerun()
 elif selected_page != st.session_state.page:
     st.session_state.page = selected_page
@@ -500,18 +532,18 @@ elif selected_page != st.session_state.page:
 # Affichage de la page active
 p = st.session_state.page
 
-if p == 'Tableau de Bord' and st.session_state.user and st.session_state.user['role'] == 'teacher':
+if p == '📊 Tableau de Bord' and st.session_state.user and st.session_state.user['role'] == 'teacher':
     teacher_dash()
 elif p == 'exam':
     exam_view()
-elif p == 'Espace Candidat' and st.session_state.user:
+elif p == '👤 Espace Candidat' and st.session_state.user:
     student_dash()
-elif p == 'Connexion':
+elif p == '🔐 Connexion':
     login_view()
-elif p == 'Énoncés':
+elif p == '📜 Énoncés':
     enonce_view()
-elif p == 'FAQ':
+elif p == '❓ FAQ':
     faq_view()
 else:
-    # Page par défaut : Accueil
+    # Page par défaut
     accueil_view()
