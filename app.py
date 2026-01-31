@@ -125,15 +125,6 @@ st.markdown("""
         border-left: 5px solid var(--orange-light) !important;
     }
 
-    .menu-login-btn button {
-        background-color: var(--orange-light) !important;
-        color: white !important;
-        margin-top: 15px !important;
-        text-align: center !important;
-        font-weight: 900 !important;
-        border-radius: 4px !important;
-    }
-
     /* DESIGN ÉLITE */
     .hb-logo {
         width: 85px; height: 85px; background: white; border: 6px solid var(--orange-light);
@@ -148,29 +139,39 @@ st.markdown("""
     }
     .white-card *, .report-card * { color: var(--midnight) !important; }
 
-    /* CARTE DE VISITE 4K DESIGN */
-    .business-card {
-        background: linear-gradient(135deg, #112240 0%, #0a192f 100%);
-        border: 2px solid #f57c00;
-        border-radius: 20px;
-        padding: 40px;
-        max-width: 600px;
-        margin: 40px auto;
+    /* CARTE DE VISITE PREMIUM 4K */
+    .premium-card {
+        background: linear-gradient(145deg, #112240, #0a192f);
+        border: 1px solid rgba(245, 124, 0, 0.3);
+        border-radius: 24px;
+        padding: 50px;
+        max-width: 650px;
+        margin: 50px auto;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+        text-align: center;
         position: relative;
-        overflow: hidden;
-        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     }
-    .business-card::before {
-        content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-        background: radial-gradient(circle, rgba(245,124,0,0.1) 0%, transparent 70%);
+    .card-accent {
+        position: absolute; top: 0; left: 0; width: 100%; height: 5px;
+        background: linear-gradient(90deg, #c2410c, #f57c00);
+        border-radius: 24px 24px 0 0;
     }
-    .card-header-logo {
-        background: white; color: #0047AB; width: 60px; height: 60px;
-        border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        font-weight: 900; font-size: 1.5rem; margin-bottom: 20px; border: 3px solid #f57c00;
+    .card-title { color: #f57c00; font-weight: 900; font-size: 2.2rem; margin-bottom: 5px; }
+    .card-subtitle { color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; font-size: 0.9rem; margin-bottom: 40px; }
+    .contact-grid { display: grid; grid-template-columns: 1fr; gap: 20px; text-align: left; max-width: 450px; margin: 0 auto; }
+    .contact-row { display: flex; align-items: center; background: rgba(255,255,255,0.03); padding: 15px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+    .row-icon { font-size: 1.5rem; margin-right: 20px; }
+    .row-text { color: #e2e8f0; font-weight: 600; font-size: 1.1rem; }
+
+    /* FOOTER OFFICIEL */
+    .official-footer {
+        width: 100vw; position: relative; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw;
+        background-color: var(--navy); border-top: 5px solid var(--orange-light); margin-top: 100px; padding: 60px 0;
+        text-align: center;
     }
-    .contact-item { display: flex; align-items: center; margin-bottom: 15px; color: #e2e8f0; font-size: 1.1rem; }
-    .contact-icon { color: #f57c00; margin-right: 15px; font-weight: bold; width: 25px; }
+    .footer-line { color: white; font-weight: 700; margin-bottom: 8px; font-size: 1.1rem; }
+    .footer-subline { color: rgba(255,255,255,0.6); font-size: 0.9rem; margin-bottom: 5px; font-weight: 400; }
+    .footer-bottom { margin-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 20px; font-size: 0.8rem; color: #4b5563; }
 
     /* CACHE RADICAL DU BOUTON TRIGGER */
     #integrity-container {
@@ -239,10 +240,6 @@ class PDF(FPDF):
         self.cell(0, 5, "Institut National Spécialisé de la Formation Professionnelle Belazzoug Athmane BBA 01", 0, 1, 'C')
         self.ln(20)
 
-    def footer(self):
-        self.set_y(-20); self.set_font('Arial', 'B', 7); self.set_text_color(150, 150, 150)
-        self.cell(0, 10, "TOUS DROITS RÉSERVÉS © 2026 - INSFP BBA 01 - HAITHEM BERKANE", 0, 0, 'C')
-
 def get_col(name): return db.collection('artifacts').document(PROJET_ID).collection('public').document('data').collection(name)
 def generate_pw(l=8): return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(l))
 
@@ -250,7 +247,7 @@ def generate_pw(l=8): return ''.join(random.choice(string.ascii_letters + string
 EXERCICES = [
     {"id": 1, "titre": "Algorithmique - Contrôle d'Accès", "points": 5, "enonce": "Écrivez un programme qui demande l'année de naissance de l'utilisateur.\n1. Calculez son âge (référence 2026).\n2. Si l'utilisateur a 18 ans ou plus: 'Accès autorisé. Bienvenue !', sinon 'Accès refusé. Vous devez être majeur.'.", "questions": [{"id":"q1_1","text":"Âge pour naissance en 2010 ?", "type":"number", "correct":16}, {"id":"q1_2","text":"Message pour 16 ans ?", "type":"choice", "options":["Accès autorisé. Bienvenue !", "Accès refusé. Vous devez être majeur."], "correct":"Accès refusé. Vous devez être majeur."}]},
     {"id": 2, "titre": "Physique - État de l'eau", "points": 5, "enonce": "Demandez la température T de l'eau (°C) et affichez son état physique :\n- T <= 0 : Glace\n- 0 < T < 100 : Liquide\n- T >= 100 : Vapeur\nBonus: Alerte si T > 300°C: 'Attention : Température critique !'", "questions": [{"id":"q2_1","text":"État à 100°C pile ?", "type":"choice", "options":["Glace", "Liquide", "Vapeur"], "correct":"Vapeur"}]},
-    {"id": 3, "titre": "Gestion - Assurance Auto", "points": 5, "enonce": "Tarif base 500€.\n- Si < 25 ans ET < 2 ans permis: +200€.\n- Si > 25 ans OU > 5 ans permis: -50€.\nSinon: Tarif de base.", "questions": [{"id":"q3_1","text":"Conducteur de 22 ans, 1 an permis. Prix final ?", "type":"number", "correct":700}]},
+    {"id": 3, "titre": "Gestion - Assurance Auto", "points": 5, "enonce": "Tarif base 500€.\n- Si < 25 ans ET < 2 ans permis: +200€.\n- Si > 25 ans OU > 5 ans permis: -50€.\nSinon: Tarif de base.", "questions": [{"id":"q3_1","text":"Prix final pour 22 ans, 1 an de permis ?", "type":"number", "correct":700}]},
     {"id": 4, "titre": "Ingénierie Financière - Crédit", "points": 5, "enonce": "Vérifiez l'éligibilité au crédit :\n- Épargne (Revenu - Dépenses) <= 0 : Refus (Fonds insuffisants).\n- Taux endettement (Mensualité / Revenu) > 33% : Refus.\n- Si Durée > 120 mois : 'Accepté sous réserve'. Sinon: 'Pré-approuvé'.", "questions": [{"id":"q4_1","text":"Revenu 2000, Dépenses 2000. Décision ?", "type":"choice", "options":["Fonds insuffisants", "Taux > 33%"], "correct":"Fonds insuffisants"}]}
 ]
 
@@ -270,13 +267,13 @@ def show_header():
 
 def show_footer():
     st.markdown("""
-        <div class="footer-wrapper">
-            <div class="footer-content">
-                <div class="footer-hb" style="width:65px; height:65px; background:white; border:4px solid #f57c00; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#0047AB; font-weight:900; font-size:1.6rem; margin-bottom:20px; box-shadow:0 4px 15px rgba(0,0,0,0.3);">HB</div>
-                <h2 style="color:white !important; margin-bottom:15px; font-weight:900; letter-spacing:1px;">RÉALISÉ PAR HAITHEM BERKANE</h2>
-                <div style="font-size:1.3rem; font-weight:700; opacity:0.95; margin-bottom:10px;">Institut National Spécialisé Belazzoug Athmane BBA 01</div>
-                <div style="height:4px; background:#f57c00; width:200px; margin:35px auto; border-radius:10px;"></div>
-                <p style="font-size:0.85rem; opacity:0.5; letter-spacing:1px;">TOUS DROITS RÉSERVÉS © 2026</p>
+        <div class="official-footer">
+            <div class="footer-line">M. Ahmed Haithem BERKANE PSFEP CIP</div>
+            <div class="footer-subline">Institut National Spécialisé dans la formation professionnelle BBA01</div>
+            <div class="footer-subline">Direction de la formation professionnelle BBA</div>
+            <div class="footer-subline">Ministère de la formation et de l'enseignement professionnels</div>
+            <div class="footer-bottom">
+                RADP 🇩🇿 | PLATEFORME ASR PRO | TOUS DROITS RÉSERVÉS © 2026
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -406,24 +403,33 @@ def faq_view():
 
 def contact_view():
     show_header()
-    st.markdown(f"""
-        <div class="business-card">
-            <div class="card-header-logo">HB</div>
-            <h2 style="color:#f57c00; margin-bottom:5px; font-weight:900; font-size:1.8rem;">Haithem BERKANE</h2>
-            <p style="color:#94a3b8; font-weight:700; margin-bottom:30px; text-transform:uppercase; letter-spacing:2px;">Enseignant Expert - ASR Pro</p>
+    st.markdown("""
+        <div class="premium-card">
+            <div class="card-accent"></div>
+            <div class="card-title">Haithem BERKANE</div>
+            <div class="card-subtitle">Enseignant Expert - ASR Pro</div>
             
-            <div class="contact-item">
-                <span class="contact-icon">📱</span> +213 699 102 523 (WhatsApp)
-            </div>
-            <div class="contact-item">
-                <span class="contact-icon">📧</span> haithemcomputing@gmail.com
-            </div>
-            <div class="contact-item">
-                <span class="contact-icon">🔗</span> Facebook & LinkedIn : Haithem BERKANE
+            <div class="contact-grid">
+                <div class="contact-row">
+                    <span class="row-icon">📱</span>
+                    <span class="row-text">+213 699 102 523 (WhatsApp)</span>
+                </div>
+                <div class="contact-row">
+                    <span class="row-icon">📧</span>
+                    <span class="row-text">haithemcomputing@gmail.com</span>
+                </div>
+                <div class="contact-row">
+                    <span class="row-icon">🔗</span>
+                    <span class="row-text">Facebook & LinkedIn : Haithem BERKANE</span>
+                </div>
+                <div class="contact-row">
+                    <span class="row-icon">📍</span>
+                    <span class="row-text">INSFP Belazzoug Athmane BBA 01</span>
+                </div>
             </div>
             
-            <div style="margin-top:40px; border-top:1px solid rgba(245,124,0,0.3); padding-top:20px; font-size:0.9rem; opacity:0.6;">
-                INSFP Belazzoug Athmane BBA 01 | RADP
+            <div style="margin-top:40px; font-size:0.8rem; opacity:0.5; letter-spacing:1px; font-weight:700; color:white;">
+                ARCHITECTURE SYSTÈME & SÉCURITÉ RÉSEAUX
             </div>
         </div>
     """, unsafe_allow_html=True)
