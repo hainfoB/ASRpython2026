@@ -122,7 +122,7 @@ st.markdown("""
     }
 
     /* CARTES CONTENU (BLANCHES COMME DANS LA RÉFÉRENCE) */
-    .white-card, [data-testid="stMetric"], .report-card {
+    .white-card, .report-card {
         background-color: var(--white) !important;
         padding: 40px !important;
         border-radius: 16px !important;
@@ -136,6 +136,42 @@ st.markdown("""
     }
     .white-card h1, .white-card h2, .white-card h3 {
         color: var(--orange-dark) !important;
+    }
+    
+    /* DESIGN SPÉCIFIQUE POUR LES STATISTIQUES (METRICS) */
+    [data-testid="stMetric"] {
+        background-color: var(--white) !important;
+        padding: 20px !important;
+        border-radius: 16px !important;
+        border-left: 10px solid var(--orange-light) !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+        margin-bottom: 20px;
+        text-align: center !important; /* Centre tout le contenu */
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    /* TITRE DE LA STATISTIQUE (LABEL) -> BLEU NUIT & AGRANDI */
+    [data-testid="stMetricLabel"] {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    [data-testid="stMetricLabel"] p {
+        color: var(--midnight) !important; /* Bleu Nuit */
+        font-size: 1.8rem !important; /* Agrandis */
+        font-weight: 800 !important;
+        text-transform: uppercase !important;
+    }
+
+    /* CHIFFRE DE LA STATISTIQUE (VALUE) -> ORANGE FONCÉ & XXL */
+    [data-testid="stMetricValue"] div {
+        color: var(--orange-dark) !important; /* Orange Foncé */
+        font-size: 4rem !important; /* Max size */
+        font-weight: 900 !important;
+        line-height: 1.2 !important; /* Interligne acceptable */
+        margin-top: 10px !important;
     }
 
     /* TEXTES GÉNÉRAUX SUR FOND SOMBRE */
