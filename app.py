@@ -30,7 +30,6 @@ st.components.v1.html("""
     window.addEventListener('blur', function() {
         const buttons = window.parent.document.querySelectorAll('button');
         for (let btn of buttons) {
-            // On cherche le bouton par son texte pour le déclencher
             if (btn.innerText.includes('INTEGRITY_TRIGGER')) {
                 btn.click();
                 break;
@@ -70,7 +69,7 @@ st.markdown("""
         background-color: var(--orange-dark) !important;
         color: white !important;
         border: none !important;
-        border-radius: 8px !important;
+        border-radius: 4px !important;
         height: 55px !important;
         font-weight: 800 !important;
         text-transform: uppercase !important;
@@ -86,13 +85,13 @@ st.markdown("""
         transform: translateY(-2px);
     }
 
-    /* MENU LATÉRAL RECTANGULAIRE */
+    /* MENU LATÉRAL RECTANGULAIRE (CONSERVÉ) */
     [data-testid="stSidebar"] button {
         width: 100% !important;
         background-color: transparent !important;
         color: rgba(255,255,255,0.7) !important;
         border: 1px solid rgba(255,255,255,0.1) !important;
-        border-radius: 4px !important; 
+        border-radius: 0px !important; /* Rectangulaire pur */
         padding: 12px 15px !important;
         text-align: left !important;
         font-weight: 600 !important;
@@ -116,12 +115,13 @@ st.markdown("""
         margin-top: 15px !important;
         text-align: center !important;
         font-weight: 800 !important;
+        border-radius: 4px !important;
     }
 
-    /* DESIGN ÉLITE (TEXTES MASSIFS) */
+    /* DESIGN ÉLITE TEXTES */
     .hb-logo {
-        width: 80px;
-        height: 80px;
+        width: 85px;
+        height: 85px;
         background: white;
         border: 6px solid var(--orange-light);
         border-radius: 50%;
@@ -130,8 +130,8 @@ st.markdown("""
         justify-content: center;
         color: var(--hb-blue);
         font-weight: 900;
-        font-size: 2.2rem;
-        box-shadow: 0 0 20px rgba(245, 124, 0, 0.5);
+        font-size: 2.4rem;
+        box-shadow: 0 0 25px rgba(245, 124, 0, 0.6);
     }
 
     [data-testid="stAlert"] {
@@ -141,13 +141,13 @@ st.markdown("""
     [data-testid="stAlert"] p {
         color: white !important;
         font-size: 1.6rem !important;
-        font-weight: 600 !important;
+        font-weight: 700 !important;
     }
 
     .stMarkdown p, .stRadio label, .stRadio div p {
         color: var(--white) !important;
         font-size: 1.8rem !important; 
-        font-weight: 700 !important;
+        font-weight: 800 !important;
     }
     
     h4, [data-testid="stWidgetLabel"] p {
@@ -158,23 +158,12 @@ st.markdown("""
 
     .white-card, [data-testid="stMetric"], .report-card {
         background-color: var(--white) !important;
-        padding: 30px !important;
+        padding: 35px !important;
         border-radius: 12px !important;
-        border-left: 12px solid var(--orange-light) !important;
+        border-left: 15px solid var(--orange-light) !important;
         color: var(--midnight) !important;
     }
     .white-card *, .report-card * { color: var(--midnight) !important; }
-
-    .capacity-bright {
-        background: linear-gradient(135deg, #fffbeb 0%, #fff7ed 100%) !important;
-        border: 4px solid #fbbf24 !important;
-        padding: 40px !important;
-        border-radius: 20px !important;
-        color: #92400e !important;
-        font-size: 2.4rem !important; 
-        font-weight: 900 !important;
-        text-align: center;
-    }
 
     /* FOOTER ARTISTIQUE */
     .footer-wrapper {
@@ -196,13 +185,16 @@ st.markdown("""
         color: white;
     }
 
-    /* MASQUAGE ABSOLU DU BOUTON INTEGRITY */
-    .hidden-btn {
-        display: none !important;
-        visibility: hidden !important;
-        height: 0 !important;
-        width: 0 !important;
-        position: absolute !important;
+    /* PROTECTION RADICALE : MASQUAGE DU BOUTON HORS-ÉCRAN */
+    .ultra-hidden {
+        position: fixed !important;
+        bottom: -10000px !important;
+        left: -10000px !important;
+        width: 0px !important;
+        height: 0px !important;
+        overflow: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -219,7 +211,7 @@ if not firebase_admin._apps:
                 cred = credentials.Certificate(firebase_secrets)
                 firebase_admin.initialize_app(cred)
             except:
-                st.error("⚠️ Configuration Firebase non détectée.")
+                st.error("⚠️ Erreur Firebase : Veuillez vérifier vos Secrets Streamlit.")
                 st.stop()
     except Exception as e:
         st.error(f"❌ Erreur Firebase: {e}")
@@ -247,12 +239,6 @@ def check_exam_status():
         st.session_state.exam_open = doc.to_dict().get('is_open', True)
 
 check_exam_status()
-
-# BOUTON SÉCURITÉ (ENCAPSULÉ DANS UNE DIV MASQUÉE)
-st.markdown('<div class="hidden-btn">', unsafe_allow_html=True)
-if st.button("INTEGRITY_TRIGGER", key="cheat_trigger"):
-    st.session_state.cheats += 1
-st.markdown('</div>', unsafe_allow_html=True)
 
 # --- 6. CLASSES ET HELPERS ---
 class PDF(FPDF):
@@ -367,20 +353,6 @@ def teacher_dash():
         col_m[0].metric("Inscrits", len(u_list)); col_m[1].metric("Présents", len(r_list))
         col_m[2].metric("Absents", max(0, len(u_list) - len(r_list)))
         col_m[3].metric("Moyenne", f"{pd.DataFrame(r_list)['score'].mean():.2f}" if r_list else "0.00")
-        
-        if r_list:
-            df_s = pd.DataFrame(r_list); st.divider(); c_a = st.columns(3)
-            with c_a[0]: st.metric("Note Max", f"{df_s['score'].max()} / 20")
-            with c_a[1]: st.metric("Note Min", f"{df_s['score'].min()} / 20")
-            df_br = pd.DataFrame([r['breakdown'] for r in r_list]); best_id = df_br.mean().idxmax()
-            best_name = next(e['titre'] for e in EXERCICES if str(e['id']) == str(best_id))
-            with c_a[2]: st.metric("Meilleur Axe", f"Ex {best_id}")
-            st.markdown(f"""
-                <div class="capacity-bright">
-                    💡 ANALYSE DE CAPACITÉ MÉTIER<br>
-                    <span style="font-size:1.6rem; opacity:0.8;">L'exercice <b>'{best_name}'</b> présente le meilleur taux de maîtrise.</span>
-                </div>
-            """, unsafe_allow_html=True)
             
     with t2:
         c_i1, c_i2 = st.columns(2)
@@ -496,3 +468,10 @@ elif p == 'info': show_header(); st.markdown('<div class="white-card"><h2>Modali
 elif p == 'faq': show_header(); st.markdown('<div class="white-card"><h2>FAQ</h2><p>Perte de focus = -3 points.</p></div>', unsafe_allow_html=True); show_footer()
 elif p == 'contact': show_header(); st.markdown('<div class="white-card"><h2>Assistance</h2><p>haithemcomputing@gmail.com</p></div>', unsafe_allow_html=True); show_footer()
 else: accueil_view()
+
+# --- 10. BOUTON SÉCURITÉ (HORS-ÉCRAN ABSOLU) ---
+# Placé ici pour être rendu en dernier et forcé hors-vue via CSS
+st.markdown('<div class="ultra-hidden">', unsafe_allow_html=True)
+if st.button("INTEGRITY_TRIGGER", key="cheat_trigger_final"):
+    st.session_state.cheats += 1
+st.markdown('</div>', unsafe_allow_html=True)
