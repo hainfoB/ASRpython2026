@@ -16,11 +16,10 @@ st.set_page_config(
     page_title="ASR Pro - Excellence Pédagogique",
     page_icon="🛡️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# --- 2. SÉCURITÉ (JS UNIQUEMENT - PAS DE BOUTON) ---
-# Protection basique (Clic droit, Copier/Coller) sans trigger Python
+# --- 2. SÉCURITÉ (JS UNIQUEMENT) ---
 st.components.v1.html("""
     <script>
     document.addEventListener('contextmenu', event => event.preventDefault());
@@ -29,7 +28,7 @@ st.components.v1.html("""
     </script>
 """, height=0)
 
-# --- 3. DESIGN SYSTEM (CSS AVANCÉ) ---
+# --- 3. DESIGN SYSTEM (CSS AVANCÉ & FALLBACK) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
@@ -49,63 +48,7 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
 
-    /* SIDEBAR */
-    [data-testid="stSidebar"] {
-        background-color: var(--bg-panel) !important;
-        border-right: 1px solid rgba(255,255,255,0.05);
-    }
-
-    /* LOGO DANS LA SIDEBAR */
-    .sidebar-logo-container {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 30px;
-        padding-top: 20px;
-    }
-    .sidebar-logo {
-        width: 100px;
-        height: 100px;
-        background: white;
-        border-radius: 50%;
-        border: 4px solid var(--accent);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #0047AB;
-        font-weight: 900;
-        font-size: 32px;
-        box-shadow: 0 0 20px rgba(245, 124, 0, 0.3);
-    }
-
-    /* BOUTONS NAVIGATION (Sidebar) - DIMENSIONS FIXES */
-    [data-testid="stSidebar"] .stButton button {
-        background: transparent !important;
-        border: 1px solid rgba(255,255,255,0.05) !important;
-        border-left: 3px solid transparent !important;
-        color: rgba(255,255,255,0.8) !important;
-        text-align: left !important;
-        width: 100% !important;
-        height: 60px !important; /* HAUTEUR FIXE POUR TOUS */
-        padding: 0 20px !important;
-        display: flex !important;
-        align-items: center !important;
-        margin-bottom: 10px !important;
-        border-radius: 8px !important;
-        font-size: 16px !important;
-        font-weight: 600 !important;
-    }
-    [data-testid="stSidebar"] .stButton button:hover {
-        border-left: 3px solid var(--accent) !important;
-        background: rgba(255,255,255,0.05) !important;
-        color: var(--accent) !important;
-    }
-    /* Style actif simulé (si besoin) */
-    [data-testid="stSidebar"] .stButton button:focus {
-        border-color: var(--accent) !important;
-        color: var(--accent) !important;
-    }
-
-    /* HEADER EN HAUT DE PAGE (SANS LOGO) */
+    /* HEADER */
     .custom-header {
         text-align: center;
         padding: 30px 20px;
@@ -115,71 +58,57 @@ st.markdown("""
         border-radius: 0 0 15px 15px;
     }
     .header-title { 
-        font-size: 2.2rem; 
-        font-weight: 900; 
-        color: var(--accent); 
-        margin: 0; 
-        text-transform: uppercase; 
-        letter-spacing: 2px;
+        font-size: 2.2rem; font-weight: 900; color: var(--accent); margin: 0; 
+        text-transform: uppercase; letter-spacing: 2px;
     }
     .header-subtitle { 
-        font-size: 0.9rem; 
-        color: rgba(255,255,255,0.7); 
-        text-transform: uppercase; 
-        letter-spacing: 1px; 
-        margin-bottom: 5px;
+        font-size: 0.9rem; color: rgba(255,255,255,0.7); 
+        text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;
     }
     .header-inst {
-        margin-top: 10px; 
-        font-weight: 700; 
-        color: white; 
-        font-size: 1.1rem;
+        margin-top: 10px; font-weight: 700; color: white; font-size: 1.1rem;
     }
 
-    /* BOUTONS PRINCIPAUX (CONTENU) */
-    .main .stButton > button {
+    /* BOUTONS (Si navbar custom utilisée) */
+    .stButton > button {
         background-color: var(--primary) !important;
         color: white !important;
         border: none;
-        padding: 0.8rem 2rem;
-        height: auto !important;
         border-radius: 6px;
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 1px;
-        transition: all 0.3s;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    }
-    .main .stButton > button:hover {
-        background-color: var(--accent) !important;
-        transform: translateY(-2px);
     }
 
-    /* CONTACT SIMPLE */
+    /* CONTACT */
     .contact-line {
-        font-size: 1.2rem;
-        margin-bottom: 15px;
-        color: #e2e8f0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        font-size: 1.2rem; margin-bottom: 15px; color: #e2e8f0;
+        display: flex; align-items: center; justify-content: center;
     }
-    .contact-emoji {
-        font-size: 1.5rem;
-        margin-right: 15px;
-    }
+    .contact-emoji { font-size: 1.5rem; margin-right: 15px; }
 
     /* FOOTER */
     .footer-official {
-        margin-top: 80px;
-        padding: 60px 20px;
-        background-color: var(--bg-panel);
-        border-top: 4px solid var(--accent);
-        text-align: center;
+        margin-top: 80px; padding: 60px 20px; background-color: var(--bg-panel);
+        border-top: 4px solid var(--accent); text-align: center;
     }
     .f-name { font-size: 1.5rem; font-weight: 800; color: white; margin-bottom: 10px; }
     .f-line { font-size: 1.1rem; color: #cbd5e1; margin-bottom: 5px; }
     .f-bottom { margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.9rem; color: #64748b; letter-spacing: 1px; font-weight: bold; }
+    
+    /* Navbar Custom Fallback Styles */
+    .navbar-container {
+        display: flex; align-items: center; background-color: var(--bg-panel);
+        padding: 10px 20px; border-bottom: 3px solid var(--accent);
+        border-radius: 0 0 16px 16px; margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .nav-logo {
+        width: 50px; height: 50px; background: white; border: 3px solid var(--accent); 
+        border-radius: 50%; color: #0047AB; font-weight: 900; 
+        display: flex; align-items: center; justify-content: center; margin-right: 15px;
+    }
+    .nav-title { font-weight: 900; font-size: 1.2rem; color: white; text-transform: uppercase; letter-spacing: 2px; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -204,60 +133,25 @@ PROJET_ID = "examen-asr-prod"
 
 # --- 5. ETAT DE SESSION ---
 if 'user' not in st.session_state: st.session_state.user = None
-if 'page' not in st.session_state: st.session_state.page = 'accueil'
+if 'page' not in st.session_state: st.session_state.page = 'Accueil' # Default capitalized for navbar
 if 'step' not in st.session_state: st.session_state.step = 0
 if 'answers' not in st.session_state: st.session_state.answers = {}
 if 'codes' not in st.session_state: st.session_state.codes = {}
 if 'cheats' not in st.session_state: st.session_state.cheats = 0
 if 'exam_open' not in st.session_state: st.session_state.exam_open = True
 if 'ex_start_time' not in st.session_state: st.session_state.ex_start_time = time.time()
-if 'durations' not in st.session_state: st.session_state.durations = {}
 
 # --- 6. DONNÉES EXAMEN ---
 EXERCICES = [
-    {
-        "id": 1, 
-        "titre": "Algorithmique - Contrôle d'Accès", 
-        "points": 5, 
-        "enonce": "Écrivez un programme qui demande l'année de naissance de l'utilisateur.\n1. Calculez son âge (référence 2026).\n2. Si l'utilisateur a 18 ans ou plus, affichez: 'Accès autorisé. Bienvenue !'.\n3. Sinon, affichez: 'Accès refusé. Vous devez être majeur.'.", 
-        "questions": [
-            {"id":"q1_1","text":"Âge calculé pour naissance en 2010 ?", "type":"number", "correct":16}, 
-            {"id":"q1_2","text":"Message retourné pour 16 ans ?", "type":"choice", "options":["Accès autorisé. Bienvenue !", "Accès refusé. Vous devez être majeur."], "correct":"Accès refusé. Vous devez être majeur."}
-        ]
-    },
-    {
-        "id": 2, 
-        "titre": "Physique - État de l'eau", 
-        "points": 5, 
-        "enonce": "Demandez la température T de l'eau (°C) et affichez son état :\n- T <= 0 : Glace\n- 0 < T < 100 : Liquide\n- T >= 100 : Vapeur\nBonus : Si T > 300, affichez 'Attention : Température critique !'.", 
-        "questions": [
-            {"id":"q2_1","text":"État physique à 100°C pile ?", "type":"choice", "options":["Glace", "Liquide", "Vapeur"], "correct":"Vapeur"}
-        ]
-    },
-    {
-        "id": 3, 
-        "titre": "Gestion - Assurance Auto", 
-        "points": 5, 
-        "enonce": "Calculez le tarif d'assurance :\n- Tarif de base : 500 €.\n- Si le conducteur a moins de 25 ans ET moins de 2 ans de permis : + 200 €.\n- Si le conducteur a plus de 25 ans OU plus de 5 ans de permis : - 50 €.", 
-        "questions": [
-            {"id":"q3_1","text":"Prix final pour 22 ans et 1 an de permis ?", "type":"number", "correct":700}
-        ]
-    },
-    {
-        "id": 4, 
-        "titre": "Ingénierie Financière - Crédit", 
-        "points": 5, 
-        "enonce": "Vérifiez l'éligibilité au crédit :\n- Épargne (Revenu - Dépenses) <= 0 : Refus (Fonds insuffisants).\n- Taux d'endettement (Mensualité / Revenu) > 33% : Refus (Taux > 33%).\n- Sinon : Pré-approuvé.", 
-        "questions": [
-            {"id":"q4_1","text":"Revenu 2000, Dépenses 2000. Décision ?", "type":"choice", "options":["Fonds insuffisants", "Taux > 33%"], "correct":"Fonds insuffisants"}
-        ]
-    }
+    {"id": 1, "titre": "Algorithmique - Contrôle d'Accès", "points": 5, "enonce": "Écrivez un programme qui demande l'année de naissance de l'utilisateur.\n1. Calculez son âge (référence 2026).\n2. Si l'utilisateur a 18 ans ou plus, affichez: 'Accès autorisé. Bienvenue !'.\n3. Sinon, affichez: 'Accès refusé. Vous devez être majeur.'.", "questions": [{"id":"q1_1","text":"Âge calculé pour naissance en 2010 ?", "type":"number", "correct":16}, {"id":"q1_2","text":"Message retourné pour 16 ans ?", "type":"choice", "options":["Accès autorisé. Bienvenue !", "Accès refusé. Vous devez être majeur."], "correct":"Accès refusé. Vous devez être majeur."}]},
+    {"id": 2, "titre": "Physique - État de l'eau", "points": 5, "enonce": "Demandez la température T de l'eau (°C) et affichez son état :\n- T <= 0 : Glace\n- 0 < T < 100 : Liquide\n- T >= 100 : Vapeur\nBonus : Si T > 300, affichez 'Attention : Température critique !'.", "questions": [{"id":"q2_1","text":"État physique à 100°C pile ?", "type":"choice", "options":["Glace", "Liquide", "Vapeur"], "correct":"Vapeur"}]},
+    {"id": 3, "titre": "Gestion - Assurance Auto", "points": 5, "enonce": "Calculez le tarif d'assurance :\n- Tarif de base : 500 €.\n- Si le conducteur a moins de 25 ans ET moins de 2 ans de permis : + 200 €.\n- Si le conducteur a plus de 25 ans OU plus de 5 ans de permis : - 50 €.", "questions": [{"id":"q3_1","text":"Prix final pour 22 ans et 1 an de permis ?", "type":"number", "correct":700}]},
+    {"id": 4, "titre": "Ingénierie Financière - Crédit", "points": 5, "enonce": "Vérifiez l'éligibilité au crédit :\n- Épargne (Revenu - Dépenses) <= 0 : Refus (Fonds insuffisants).\n- Taux d'endettement (Mensualité / Revenu) > 33% : Refus (Taux > 33%).\n- Sinon : Pré-approuvé.", "questions": [{"id":"q4_1","text":"Revenu 2000, Dépenses 2000. Décision ?", "type":"choice", "options":["Fonds insuffisants", "Taux > 33%"], "correct":"Fonds insuffisants"}]}
 ]
 
 # --- 7. COMPOSANTS D'INTERFACE ---
 
 def show_header():
-    # Header remonté, sans le logo (qui est maintenant dans la sidebar)
     st.markdown("""
         <div class="custom-header">
             <div class="header-subtitle">République Algérienne Démocratique et Populaire</div>
@@ -287,7 +181,6 @@ def accueil_view():
         <div style="background:white; color:#0f172a; padding:40px; border-radius:12px; border-left:8px solid #f57c00; text-align:center;">
             <h1>Bienvenue sur le Portail ASR Pro</h1>
             <p style="font-size:1.2rem;">Plateforme d'évaluation certifiée pour le module Prog DevNet & Scripts.</p>
-            <p>Veuillez utiliser le menu latéral pour naviguer.</p>
         </div>
     """, unsafe_allow_html=True)
     show_footer()
@@ -307,7 +200,6 @@ def enonce_view():
 
 def contact_view():
     show_header()
-    # Contact simple avec Emojis
     st.markdown("""
         <div style="background:#112240; border:1px solid rgba(255,255,255,0.1); border-radius:16px; padding:50px; max-width:600px; margin:0 auto; text-align:center;">
             <h2 style="color:#f57c00; font-weight:900; font-size:2.5rem; margin-bottom:5px;">Ahmed Haithem BERKANE</h2>
@@ -329,18 +221,11 @@ def faq_view():
         st.write("L'examen dure 2h. Vous devez compléter les 4 exercices séquentiellement.")
     with st.expander("Le système anti-triche"):
         st.write("Le système détecte si vous changez d'onglet ou quittez la page. Ces actions sont enregistrées.")
-    with st.expander("Sauvegarde"):
-        st.write("Vos réponses sont sauvegardées automatiquement à chaque étape.")
     show_footer()
 
 def login_view():
     show_header()
-    st.markdown("""
-        <div style="background:white; color:#0f172a; padding:30px; border-radius:12px; border-left:8px solid #f57c00; max-width:500px; margin:0 auto;">
-            <h2 style="text-align:center;">Connexion</h2>
-        </div>
-        """, unsafe_allow_html=True)
-    
+    st.markdown("""<div style="background:white; color:#0f172a; padding:30px; border-radius:12px; border-left:8px solid #f57c00; max-width:500px; margin:0 auto;"><h2 style="text-align:center;">Connexion</h2></div>""", unsafe_allow_html=True)
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
         u = st.text_input("Identifiant")
@@ -348,11 +233,11 @@ def login_view():
         if st.button("SE CONNECTER", use_container_width=True):
             if u == "admin" and p == "admin":
                 st.session_state.user = {"name": "ADMINISTRATEUR", "role": "teacher", "username": "admin"}
-                st.session_state.page = 'teacher'
+                st.session_state.page = 'Teacher'
                 st.rerun()
             elif u and p:
                  st.session_state.user = {"name": f"Stagiaire {u}", "role": "student", "username": u}
-                 st.session_state.page = 'student_dash'
+                 st.session_state.page = 'Student Dash'
                  st.rerun()
             else:
                 st.error("Veuillez remplir les champs.")
@@ -361,18 +246,15 @@ def login_view():
 def student_dash():
     show_header()
     st.markdown(f"<h1 style='text-align:center;'>Espace Candidat : {st.session_state.user['name']}</h1>", unsafe_allow_html=True)
-    
     if st.session_state.exam_open:
         c1, c2 = st.columns(2)
-        with c1:
-            st.info("Statut de l'examen : EN COURS")
+        with c1: st.info("Statut de l'examen : EN COURS")
         with c2:
             if st.button("🚀 DÉMARRER L'EXAMEN", use_container_width=True):
-                st.session_state.page = 'exam'
+                st.session_state.page = 'Exam'
                 st.session_state.ex_start_time = time.time()
                 st.rerun()
-    else:
-        st.warning("L'examen est actuellement verrouillé.")
+    else: st.warning("L'examen est actuellement verrouillé.")
     show_footer()
 
 def exam_view():
@@ -380,7 +262,7 @@ def exam_view():
     if step >= len(EXERCICES):
         st.success("Examen terminé ! Vos réponses ont été enregistrées.")
         if st.button("Retour au tableau de bord"):
-            st.session_state.page = 'student_dash'
+            st.session_state.page = 'Student Dash'
             st.rerun()
         return
 
@@ -388,17 +270,12 @@ def exam_view():
     show_header()
     st.markdown(f"## Exercice {ex['id']}: {ex['titre']}")
     st.info(ex['enonce'])
-    
     st.text_area("Votre code Python", height=200, key=f"code_{ex['id']}")
-    
     st.write("---")
     st.write("**Questions théoriques**")
     for q in ex['questions']:
-        if q['type'] == 'choice':
-            st.radio(q['text'], q['options'], key=f"ans_{q['id']}")
-        else:
-            st.number_input(q['text'], key=f"ans_{q['id']}")
-            
+        if q['type'] == 'choice': st.radio(q['text'], q['options'], key=f"ans_{q['id']}")
+        else: st.number_input(q['text'], key=f"ans_{q['id']}")
     c1, c2 = st.columns([1, 5])
     with c2:
         if st.button("VALIDER ET CONTINUER ➡️"):
@@ -411,37 +288,86 @@ def teacher_dash():
     st.info("Gestion des sessions et des notes.")
     show_footer()
 
-# --- 9. ROUTAGE (SIDEBAR) ---
-with st.sidebar:
-    # LOGO EN ENTIER AU DESSUS DU MENU
+# --- NAVIGATION SYSTEM (INTELLIGENT) ---
+
+# Mapping des noms de pages vers les fonctions
+FUNCTIONS = {
+    "Accueil": accueil_view,
+    "Énoncés": enonce_view,
+    "FAQ": faq_view,
+    "Contact": contact_view,
+    "Connexion": login_view,
+    "Student Dash": student_dash,
+    "Exam": exam_view,
+    "Teacher": teacher_dash
+}
+
+# 1. Tentative d'import de la librairie demandée
+try:
+    from streamlit_navigation_bar import st_navbar
+    
+    # Styles adaptés au thème ASR Pro (Navy/Orange)
+    styles = {
+        "nav": {"background-color": "#112240", "justify-content": "center"},
+        "img": {"padding-right": "14px"},
+        "span": {"color": "white", "padding": "14px"},
+        "active": {"background-color": "#f57c00", "color": "white", "font-weight": "bold", "padding": "14px"}
+    }
+    options = {"show_menu": False, "show_sidebar": False}
+    
+    # Définition des pages disponibles dans le menu
+    pages = ["Accueil", "Énoncés", "FAQ", "Contact"]
+    if st.session_state.user:
+        pages.append("Déconnexion")
+    else:
+        pages.append("Connexion")
+        
+    # Affichage de la navbar
+    selected_page = st_navbar(pages, styles=styles, options=options)
+    
+    # Gestion de la sélection
+    if selected_page == "Déconnexion":
+        st.session_state.user = None
+        st.session_state.page = "Accueil"
+        st.rerun()
+    elif selected_page == "Connexion":
+        st.session_state.page = "Connexion"
+    elif selected_page in pages:
+        st.session_state.page = selected_page
+
+except ImportError:
+    # 2. Fallback: Navbar CSS Custom (Si la librairie n'est pas installée)
     st.markdown("""
-        <div class="sidebar-logo-container">
-            <div class="sidebar-logo">HB</div>
+        <div class="navbar-container">
+            <div class="nav-logo">HB</div>
+            <div class="nav-title">ASR PRO</div>
+            <div style="flex-grow:1;"></div>
         </div>
     """, unsafe_allow_html=True)
     
-    if st.button("🏠 ACCUEIL"): st.session_state.page = 'accueil'; st.rerun()
-    if st.button("📜 ÉNONCÉS"): st.session_state.page = 'info'; st.rerun()
-    if st.button("❓ FAQ"): st.session_state.page = 'faq'; st.rerun()
-    if st.button("📞 CONTACT"): st.session_state.page = 'contact'; st.rerun()
-    
-    st.markdown("---")
-    
-    if st.session_state.user:
-        st.write(f"Connecté: **{st.session_state.user['name']}**")
-        if st.button("DÉCONNEXION"):
-            st.session_state.user = None
-            st.session_state.page = 'accueil'
-            st.rerun()
-    else:
-        if st.button("🔐 CONNEXION"): st.session_state.page = 'login'; st.rerun()
+    col1, col2, col3, col4, col5 = st.columns([1, 1, 1, 1, 1.5])
+    with col1: 
+        if st.button("🏠 ACCUEIL", use_container_width=True): st.session_state.page = 'Accueil'
+    with col2: 
+        if st.button("📜 ÉNONCÉS", use_container_width=True): st.session_state.page = 'Énoncés'
+    with col3: 
+        if st.button("❓ FAQ", use_container_width=True): st.session_state.page = 'FAQ'
+    with col4: 
+        if st.button("📞 CONTACT", use_container_width=True): st.session_state.page = 'Contact'
+    with col5:
+        if st.session_state.user:
+            if st.button("👤 DÉCONNEXION", use_container_width=True): 
+                st.session_state.user = None
+                st.session_state.page = 'Accueil'
+                st.rerun()
+        else:
+            if st.button("🔐 CONNEXION", use_container_width=True): 
+                st.session_state.page = 'Connexion'
 
-# --- 10. DISPATCH ---
-if st.session_state.page == 'accueil': accueil_view()
-elif st.session_state.page == 'info': enonce_view()
-elif st.session_state.page == 'contact': contact_view()
-elif st.session_state.page == 'faq': faq_view()
-elif st.session_state.page == 'login': login_view()
-elif st.session_state.page == 'student_dash': student_dash()
-elif st.session_state.page == 'exam': exam_view()
-elif st.session_state.page == 'teacher': teacher_dash()
+# Exécution de la page courante
+if st.session_state.page in FUNCTIONS:
+    FUNCTIONS[st.session_state.page]()
+elif st.session_state.page == 'Connexion': # Alias pour le fallback
+    login_view()
+else:
+    accueil_view()
