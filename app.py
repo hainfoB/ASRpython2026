@@ -359,7 +359,7 @@ def show_footer():
         <div class="footer-wrapper">
             <div class="footer-content">
                 <div class="footer-hb" style="width:70px; height:70px; background:white; border:4px solid #f57c00; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#0047AB; font-weight:900; font-size:1.8rem; margin-bottom:20px; box-shadow:0 4px 15px rgba(0,0,0,0.3);">HB</div>
-                <h2 style="color:white !important; margin-bottom:15px; font-weight:900; letter-spacing:1px; font-size:1.8rem;">RÉALISÉ PAR HAITHEM BERKANE TOUS DROITS RESERVES 2026</h2>
+                <h2 style="color:white !important; margin-bottom:15px; font-weight:900; letter-spacing:1px; font-size:1.8rem;">RÉALISÉ PAR HAITHEM BERKANE</h2>
                 <div style="font-size:1.4rem; font-weight:700; opacity:0.95; margin-bottom:10px;">Institut National Spécialisé Belazzoug Athmane BBA 01</div>
                 <p style="font-size:1.2rem; opacity:0.7; font-weight:400;">Ministère de la Formation et de l'Enseignement Professionnels 🇩🇿</p>
                 <div style="height:4px; background:#f57c00; width:200px; margin:35px auto; border-radius:10px;"></div>
@@ -400,7 +400,8 @@ def audit_results_detailed(data):
 def fetch_dashboard_data():
     u_docs = get_col('users').where('role', '==', 'student').get()
     r_docs = get_col('results').get()
-    return [u.to_dict() for u in u_docs], [r.to_dict() for r in r_docs]
+    # On ajoute l'ID dans le dictionnaire pour éviter d'utiliser r_docs plus tard
+    return [{"id": u.id, **u.to_dict()} for u in u_docs], [{"id": r.id, **r.to_dict()} for r in r_docs]
 
 def teacher_dash():
     # Chargement optimisé des données
@@ -465,14 +466,19 @@ def teacher_dash():
             
     with t3:
         if r_list:
-            df_res = pd.DataFrame([{"ID": r.id, "Nom": r.to_dict()['name'], "Note": r.to_dict()['score'], "Alertes": r.to_dict().get('cheats',0)} for r in r_docs])
+            # FIX: On utilise r_list qui contient déjà 'id'
+            df_res = pd.DataFrame([{"ID": r['id'], "Nom": r['name'], "Note": r['score'], "Alertes": r.get('cheats',0)} for r in r_list])
             sel = st.dataframe(df_res.drop(columns=["ID"]), use_container_width=True, on_select="rerun", selection_mode="single-row")
             if sel and sel.selection.rows:
-                doc_t = r_docs[sel.selection.rows[0]]; data = doc_t.to_dict()
+                # FIX: Récupérer les données via l'index dans r_list
+                idx = sel.selection.rows[0]
+                data = r_list[idx]
+                doc_id = data['id']
+
                 st.markdown(f'<div class="white-card"><h2>COPIE : {data["name"]}</h2><h1>{data["score"]} / 20</h1></div>', unsafe_allow_html=True)
                 new_s = st.number_input("Ajuster Note :", 0.0, 20.0, float(data['score']), 0.25)
                 if st.button("SAUVEGARDER"):
-                    get_col('results').document(doc_t.id).update({"score": new_s}); st.success("Mis à jour !"); time.sleep(1); 
+                    get_col('results').document(doc_id).update({"score": new_s}); st.success("Mis à jour !"); time.sleep(1); 
                     fetch_dashboard_data.clear(); st.rerun()
                 st.divider(); audit_results_detailed(data)
 
