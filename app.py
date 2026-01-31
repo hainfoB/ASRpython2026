@@ -20,6 +20,7 @@ st.set_page_config(
 )
 
 # --- 2. SÉCURITÉ & PROTECTION (ANTI-TRICHE JS) ---
+# Ce script gère le masquage du bouton de sécurité sans casser le CSS
 st.components.v1.html("""
     <script>
     document.addEventListener('contextmenu', event => event.preventDefault());
@@ -43,7 +44,7 @@ st.components.v1.html("""
     </script>
 """, height=0)
 
-# --- 3. DESIGN SYSTEM (CORRIGÉ & SIMPLIFIÉ) ---
+# --- 3. DESIGN SYSTEM (NETTOYÉ & CORRIGÉ) ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
@@ -70,7 +71,7 @@ st.markdown("""
         border-right: 1px solid rgba(255,255,255,0.05) !important;
     }
 
-    /* BOUTONS NAVIGATION */
+    /* BOUTONS NAVIGATION SIDEBAR */
     [data-testid="stSidebar"] .stButton button {
         background-color: transparent !important;
         border: none !important;
@@ -88,88 +89,97 @@ st.markdown("""
         border-left: 4px solid var(--orange-light) !important;
     }
 
-    /* BOUTONS CONTENU */
-    .stButton > button {
+    /* BOUTONS CONTENU PRINCIPAL */
+    .main .stButton > button {
         background-color: var(--orange-dark) !important;
         color: white !important;
         font-weight: 800 !important;
         border: none !important;
         border-radius: 6px !important;
         padding: 10px 20px !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
-    .stButton > button:hover {
+    .main .stButton > button:hover {
         background-color: var(--orange-light) !important;
+        box-shadow: 0 4px 12px rgba(245, 124, 0, 0.4) !important;
     }
 
     /* HEADER STYLE */
     .header-container {
         text-align: center;
-        padding: 20px;
-        margin-bottom: 30px;
+        padding: 30px 20px;
+        margin-bottom: 40px;
         border-bottom: 1px solid rgba(255,255,255,0.1);
+        background: radial-gradient(circle at center, rgba(17, 34, 64, 0.8) 0%, rgba(10, 25, 47, 0) 70%);
     }
     .header-logo {
-        width: 80px; height: 80px; margin: 0 auto 15px auto;
+        width: 90px; height: 90px; margin: 0 auto 20px auto;
         background: white; border: 4px solid var(--orange-light); border-radius: 50%;
         display: flex; align-items: center; justify-content: center;
-        color: var(--hb-blue); font-weight: 900; font-size: 2rem;
+        color: var(--hb-blue); font-weight: 900; font-size: 2.2rem;
+        box-shadow: 0 0 20px rgba(245, 124, 0, 0.4);
     }
     .header-title {
-        color: var(--orange-light); font-size: 2rem; font-weight: 900; margin: 10px 0;
+        color: var(--orange-light); font-size: 2.2rem; font-weight: 900; margin: 15px 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     }
     .header-subtitle {
-        color: rgba(255,255,255,0.7); font-size: 1rem; text-transform: uppercase; letter-spacing: 2px;
+        color: rgba(255,255,255,0.8); font-size: 1.1rem; text-transform: uppercase; letter-spacing: 3px; font-weight: 600;
     }
 
-    /* FOOTER STYLE (CORRIGÉ & AGRANDI) */
+    /* FOOTER STYLE (AGRANDI ET CORRIGÉ) */
     .footer-container {
-        margin-top: 80px;
-        padding: 40px 20px;
+        margin-top: 100px;
+        padding: 60px 20px;
         background-color: var(--navy);
-        border-top: 5px solid var(--orange-light);
+        border-top: 6px solid var(--orange-light);
         text-align: center;
         color: white;
+        width: 100%;
     }
     .footer-name {
-        font-size: 1.4rem; font-weight: 800; margin-bottom: 10px; color: #fff;
+        font-size: 1.8rem; font-weight: 900; margin-bottom: 15px; color: #fff; letter-spacing: 1px;
     }
     .footer-inst {
-        font-size: 1.1rem; color: #cbd5e1; margin-bottom: 5px; font-weight: 500;
+        font-size: 1.3rem; color: #cbd5e1; margin-bottom: 8px; font-weight: 500;
     }
     .footer-bottom {
-        margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);
-        font-size: 0.9rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;
+        margin-top: 40px; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1);
+        font-size: 1rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 2px; font-weight: 700;
     }
 
-    /* CARTE CONTACT SIMPLE */
+    /* CARTE CONTACT */
     .contact-box {
         background-color: var(--navy);
         border: 1px solid rgba(245, 124, 0, 0.3);
-        border-radius: 15px;
-        padding: 40px;
-        max-width: 600px;
-        margin: 0 auto;
+        border-radius: 16px;
+        padding: 50px;
+        max-width: 700px;
+        margin: 40px auto;
         text-align: center;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
     }
-    .contact-name { font-size: 1.8rem; font-weight: 900; color: var(--orange-light); margin-bottom: 5px; }
-    .contact-role { font-size: 1rem; color: #94a3b8; text-transform: uppercase; margin-bottom: 30px; letter-spacing: 1px; }
     .contact-row {
         display: flex; align-items: center; justify-content: center;
-        margin-bottom: 15px; font-size: 1.1rem; color: white;
+        margin-bottom: 20px; font-size: 1.2rem; color: white;
+        padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05);
     }
-    .contact-icon { color: var(--orange-light); margin-right: 15px; font-weight: bold; }
+    .contact-row:last-child { border-bottom: none; }
+    .contact-icon { color: var(--orange-light); margin-right: 20px; font-size: 1.5rem; }
 
     /* CONTAINERS */
     .white-card {
-        background-color: white; padding: 30px; border-radius: 10px;
-        border-left: 10px solid var(--orange-light); margin-bottom: 20px;
+        background-color: white; padding: 40px; border-radius: 12px;
+        border-left: 12px solid var(--orange-light); margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     }
-    .white-card h3 { color: var(--orange-dark); margin-top: 0; }
-    .white-card p { color: #0a192f; font-size: 1.1rem; }
+    .white-card h3 { color: var(--orange-dark); margin-top: 0; font-weight: 900; font-size: 1.5rem; }
+    .white-card p { color: #0a192f; font-size: 1.2rem; line-height: 1.6; }
     
-    /* CACHE TRIGGER */
-    div[data-testid="stButton"] button:contains("INTEGRITY_TRIGGER") { display: none; }
+    /* MASQUER LE BOUTON TRIGGER VIA CSS CIBLÉ */
+    /* On utilise une astuce layout pour cacher le bouton sans casser le DOM */
+    div[data-testid="stButton"] { position: relative; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -216,9 +226,11 @@ def check_exam_status():
 
 check_exam_status()
 
-# BOUTON SÉCURITÉ CACHÉ
+# BOUTON SÉCURITÉ CACHÉ DANS UN CONTENEUR INVISIBLE
+st.markdown('<div style="position:fixed; top:-9999px; left:-9999px; width:0; height:0; overflow:hidden;">', unsafe_allow_html=True)
 if st.button("INTEGRITY_TRIGGER", key="cheat_trigger"):
     st.session_state.cheats += 1
+st.markdown('</div>', unsafe_allow_html=True)
 
 # --- 6. CLASSES ET HELPERS ---
 class PDF(FPDF):
@@ -229,6 +241,8 @@ class PDF(FPDF):
         self.set_y(15); self.set_font('Arial', 'B', 8); self.set_text_color(0, 0, 0)
         self.cell(0, 5, "REPUBLIQUE ALGERIENNE DEMOCRATIQUE ET POPULAIRE", 0, 1, 'C')
         self.cell(0, 5, "MINISTERE DE LA FORMATION ET DE L'ENSEIGNEMENT PROFESSIONNELS", 0, 1, 'C')
+        self.set_font('Arial', 'B', 7)
+        self.cell(0, 5, "Institut National Spécialisé de la Formation Professionnelle Belazzoug Athmane BBA 01", 0, 1, 'C')
         self.ln(20)
 
 def get_col(name): return db.collection('artifacts').document(PROJET_ID).collection('public').document('data').collection(name)
@@ -250,12 +264,12 @@ def show_header():
             <div class="header-logo">HB</div>
             <div class="header-subtitle">République Algérienne Démocratique et Populaire</div>
             <div class="header-title">Institut National Spécialisé Belazzoug Athmane BBA 01</div>
-            <div style="font-weight:700; letter-spacing:3px;">PLATEFORME D'EXAMEN ASR PRO</div>
+            <div style="color:white; font-weight:700; letter-spacing:4px; font-size:1.2rem;">PLATEFORME D'EXAMEN ASR PRO</div>
         </div>
     """, unsafe_allow_html=True)
 
 def show_footer():
-    # FOOTER SIMPLIFIÉ ET NETTOYÉ
+    # FOOTER AVEC TEXTES EXACTS ET GRANDE TAILLE
     st.markdown("""
         <div class="footer-container">
             <div class="footer-name">M. Ahmed Haithem BERKANE PSFEP CIP</div>
@@ -271,14 +285,14 @@ def show_footer():
 
 def contact_view():
     show_header()
-    # CARTE CONTACT SIMPLE ET BELLE
+    # CONTACT SIMPLE ET BEAU
     st.markdown("""
         <div class="contact-box">
-            <div class="contact-name">Ahmed Haithem BERKANE</div>
-            <div class="contact-role">PSFEP CIP - Expert ASR Pro</div>
+            <h2 style="color:#f57c00; font-weight:900; margin-bottom:5px; font-size:2.5rem;">Ahmed Haithem BERKANE</h2>
+            <p style="color:#94a3b8; font-weight:700; text-transform:uppercase; margin-bottom:40px; letter-spacing:2px;">PSFEP CIP - Expert ASR Pro</p>
             
             <div class="contact-row">
-                <span class="contact-icon">📞</span> +213 699 102 523 (WhatsApp)
+                <span class="contact-icon">📱</span> +213 699 102 523 (WhatsApp)
             </div>
             <div class="contact-row">
                 <span class="contact-icon">📧</span> haithemcomputing@gmail.com
@@ -286,26 +300,29 @@ def contact_view():
             <div class="contact-row">
                 <span class="contact-icon">🔗</span> Facebook & LinkedIn : Haithem BERKANE
             </div>
+            <div class="contact-row">
+                <span class="contact-icon">📍</span> INSFP Belazzoug Athmane BBA 01
+            </div>
         </div>
     """, unsafe_allow_html=True)
     show_footer()
 
 def enonce_view():
     show_header()
-    st.markdown("<h2 style='text-align:center; color:#f57c00; margin-bottom:30px;'>📜 ÉNONCÉ OFFICIEL DE L'EXAMEN</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align:center; color:#f57c00; margin-bottom:30px; font-weight:900;'>📜 ÉNONCÉ OFFICIEL DE L'EXAMEN</h2>", unsafe_allow_html=True)
     for ex in EXERCICES:
         st.markdown(f"""
             <div class="white-card">
                 <h3>EXERCICE {ex['id']} : {ex['titre']}</h3>
                 <p style="white-space: pre-wrap;">{ex['enonce']}</p>
-                <p style="font-weight:bold; margin-top:10px; color:#0047AB;">Barème : {ex['points']} Points</p>
+                <p style="font-weight:bold; margin-top:15px; color:#0047AB; font-size:1.1rem;">Barème : {ex['points']} Points</p>
             </div>
         """, unsafe_allow_html=True)
     show_footer()
 
 def faq_view():
     show_header()
-    st.markdown("<h2 style='text-align:center; color:#f57c00; margin-bottom:30px;'>❓ FOIRE AUX QUESTIONS</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align:center; color:#f57c00; margin-bottom:30px; font-weight:900;'>❓ FOIRE AUX QUESTIONS</h2>", unsafe_allow_html=True)
     faqs = [
         ("Comment démarrer ?", "Connectez-vous avec vos identifiants, puis cliquez sur 'Démarrer l'épreuve' dans votre tableau de bord."),
         ("Le système anti-triche", "Toute sortie de l'onglet (perte de focus) est enregistrée. Plus de 3 sorties peuvent invalider votre copie."),
