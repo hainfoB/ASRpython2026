@@ -465,7 +465,8 @@ def teacher_dash():
     u_list, r_list = fetch_dashboard_data()
     
     # TRI PAR TEMPS (Heure Algérie)
-    r_list.sort(key=lambda x: x.get('timestamp', 0))
+    # Correction: On gère le cas où timestamp est None ou absent pour éviter le crash
+    r_list.sort(key=lambda x: float(x.get('timestamp') or 0))
 
     if st.button("🔄 Actualiser les données"):
         fetch_dashboard_data.clear()
