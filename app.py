@@ -20,7 +20,27 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. SÉCURITÉ & PROTECTION (CORRECTIF ANTI-TRICHE & MASQUAGE BOUTON) ---
+# --- 2. SÉCURITÉ & PROTECTION (CORRECTIF ANTI-TRICHE & MASQUAGE) ---
+
+# A. MASQUAGE CSS (Immédiat)
+st.markdown("""
+    <style>
+    /* Masquer le bouton spécifique qui contient le texte INTEGRITY_TRIGGER */
+    /* Note: :has() est supporté par les navigateurs modernes */
+    div[data-testid="stButton"]:has(button:contains("INTEGRITY_TRIGGER")) {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        width: 0 !important;
+        position: absolute !important;
+        left: -9999px !important;
+    }
+    /* Fallback si :has n'est pas supporté : on ne peut pas cibler en CSS pur sans classe unique, 
+       le JS prendra le relais. */
+    </style>
+""", unsafe_allow_html=True)
+
+# B. SCRIPT DE PROTECTION JS (Persistant)
 st.components.v1.html("""
     <script>
     // Désactiver le clic droit et le copier-coller
@@ -33,18 +53,11 @@ st.components.v1.html("""
         const buttons = window.parent.document.querySelectorAll('button');
         for (const btn of buttons) {
             if (btn.innerText.includes('INTEGRITY_TRIGGER')) {
-                // On remonte au conteneur parent (div stButton)
                 const container = btn.closest('div[data-testid="stButton"]');
                 if (container) {
-                    // On le déplace hors de l'écran sans le supprimer du DOM
+                    container.style.display = 'none';
+                    container.style.visibility = 'hidden';
                     container.style.position = 'absolute';
-                    container.style.top = '-9999px';
-                    container.style.left = '-9999px';
-                    container.style.width = '0';
-                    container.style.height = '0';
-                    container.style.overflow = 'hidden';
-                    container.style.opacity = '0';
-                    container.style.zIndex = '-1000';
                 }
             }
         }
@@ -58,14 +71,12 @@ st.components.v1.html("""
             if (btn.innerText.includes('INTEGRITY_TRIGGER')) {
                 btn.click();
                 clicked = true;
-                console.log("Infraction détectée : Trigger activé.");
                 break;
             }
         }
-        if (!clicked) console.log("Bouton Trigger introuvable.");
     }
 
-    // Surveillance en boucle (Masquage visuel permanent)
+    // Surveillance en boucle (Masquage visuel permanent toutes les 50ms)
     setInterval(hideTriggerButton, 50);
 
     // Détection changement d'onglet (API Visibility)
@@ -307,11 +318,15 @@ if st.button("INTEGRITY_TRIGGER", key="cheat_trigger"):
 
 # --- 6. CLASSES ET HELPERS ---
 def get_algeria_time_str(timestamp):
-    """Convertit un timestamp en heure Algérie (UTC+1)"""
-    if not timestamp: return "--:--"
-    utc_dt = datetime.datetime.fromtimestamp(timestamp, datetime.timezone.utc)
-    alg_dt = utc_dt + datetime.timedelta(hours=1)
-    return alg_dt.strftime("%H:%M:%S")
+    """Convertit un timestamp en heure Algérie (UTC+1) de manière sécurisée"""
+    try:
+        if not timestamp: return "--:--"
+        ts = float(timestamp)
+        utc_dt = datetime.datetime.fromtimestamp(ts, datetime.timezone.utc)
+        alg_dt = utc_dt + datetime.timedelta(hours=1)
+        return alg_dt.strftime("%H:%M:%S")
+    except:
+        return "--:--"
 
 def normalize_name(name):
     """Normalise un nom pour la comparaison"""
@@ -482,8 +497,14 @@ def teacher_dash():
     u_list, r_list = fetch_dashboard_data()
     
     # TRI PAR TEMPS (Heure Algérie)
-    # Correction: On gère le cas où timestamp est None ou absent pour éviter le crash
-    r_list.sort(key=lambda x: float(x.get('timestamp') or 0))
+    # Correction : Fonction de tri robuste qui gère les None et les types incorrects
+    def get_sort_key(x):
+        try:
+            return float(x.get('timestamp') or 0)
+        except:
+            return 0.0
+
+    r_list.sort(key=get_sort_key)
 
     if st.button("🔄 Actualiser les données"):
         fetch_dashboard_data.clear()
