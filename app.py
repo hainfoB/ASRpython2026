@@ -485,15 +485,18 @@ def fetch_dashboard_data():
 def teacher_dash():
     u_list, r_list = fetch_dashboard_data()
     
-    # TRI PAR TEMPS (Heure Algérie) - SÉCURISÉ
-    def get_sort_key(x):
-        try:
-            # On essaie de récupérer le timestamp, sinon 0.0 pour éviter le crash
-            return float(x.get('timestamp') or 0.0)
-        except:
-            return 0.0
+    # NETTOYAGE DES DONNÉES AVANT TRI (Prévention absolue du crash)
+    for r in r_list:
+        if 'timestamp' not in r or r['timestamp'] is None:
+            r['timestamp'] = 0.0
+        else:
+            try:
+                r['timestamp'] = float(r['timestamp'])
+            except:
+                r['timestamp'] = 0.0
 
-    r_list.sort(key=get_sort_key)
+    # TRI SÉCURISÉ (Par ordre d'arrivée croissant)
+    r_list.sort(key=lambda x: x['timestamp'])
 
     if st.button("🔄 Actualiser les données"):
         fetch_dashboard_data.clear()
@@ -591,7 +594,7 @@ def teacher_dash():
             # Création du DataFrame avec heure algérienne
             data_for_df = []
             for r in r_list:
-                ts = r.get('timestamp', 0)
+                ts = r.get('timestamp', 0.0)
                 data_for_df.append({
                     "ID": r['id'],
                     "Nom": r['name'],
