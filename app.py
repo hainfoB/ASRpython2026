@@ -20,40 +20,29 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. SÉCURITÉ & PROTECTION (RENFORCÉE +++) ---
-# Double détection (Visibilité + Focus) et masquage CSS intelligent du trigger
+# --- 2. SÉCURITÉ & PROTECTION (RENFORCÉE) ---
+# Utilisation de 'visibilitychange' pour mieux détecter le changement d'onglet
 st.components.v1.html("""
     <script>
-    // Désactiver les interactions indésirables
     document.addEventListener('contextmenu', event => event.preventDefault());
     document.addEventListener('copy', e => e.preventDefault());
     document.addEventListener('paste', e => e.preventDefault());
     
-    function triggerCheat() {
-        const buttons = window.parent.document.querySelectorAll('button');
-        let clicked = false;
-        buttons.forEach(btn => {
-            if (btn.innerText.includes('INTEGRITY_TRIGGER')) {
-                btn.click();
-                clicked = true;
-            }
-        });
-        if (!clicked) console.log("Bouton Anti-Triche introuvable !");
-    }
-
-    // 1. Détection changement d'onglet (API Visibility)
+    // Détection agressive du changement d'onglet/fenêtre
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
-            console.log("Infraction: Onglet masqué");
             triggerCheat();
         }
     });
 
-    // 2. Détection perte de focus (Clic hors fenêtre)
-    window.addEventListener('blur', function() {
-        console.log("Infraction: Perte de focus");
-        triggerCheat();
-    });
+    function triggerCheat() {
+        const buttons = window.parent.document.querySelectorAll('button');
+        buttons.forEach(btn => {
+            if (btn.innerText.includes('INTEGRITY_TRIGGER')) {
+                btn.click();
+            }
+        });
+    }
     </script>
 """, height=0)
 
@@ -79,7 +68,7 @@ st.markdown("""
 
     [data-testid="stSidebar"] { display: none; }
     
-    /* BOUTONS */
+    /* BOUTONS (ORANGE FONCÉ) */
     .stButton > button, [data-testid="stFormSubmitButton"] > button, .stDownloadButton > button {
         background-color: var(--orange-dark) !important;
         color: white !important;
@@ -106,12 +95,13 @@ st.markdown("""
         box-shadow: 0 0 25px rgba(245, 124, 0, 0.6);
     }
 
-    /* TEXTES */
+    /* LABELS BLANCS ET GRANDS */
     [data-testid="stWidgetLabel"] p, label, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
         color: #ffffff !important;
         font-size: 1.5rem !important;
         font-weight: 700 !important;
     }
+    
     .stTextInput input, .stNumberInput input {
         color: #333 !important;
         font-weight: bold;
@@ -129,7 +119,7 @@ st.markdown("""
     }
     .white-card *, .white-card h1, .white-card h2 { color: var(--midnight) !important; }
     
-    /* KPI */
+    /* STATISTIQUES (KPI) */
     [data-testid="stMetric"] {
         background-color: var(--white) !important;
         padding: 30px 10px !important;
@@ -156,7 +146,7 @@ st.markdown("""
         line-height: 1.1 !important;
     }
 
-    /* FILE UPLOADER */
+    /* FILE UPLOADER CUSTOM */
     [data-testid="stFileUploaderDropzoneInstructions"], [data-testid="stFileUploaderDropzone"] div small { display: none !important; }
     [data-testid="stFileUploaderDropzone"] {
         border: 2px dashed var(--orange-dark) !important;
@@ -169,24 +159,15 @@ st.markdown("""
         border: none !important;
     }
 
-    /* MASQUAGE INTELLIGENT DU BOUTON ANTI-TRICHE */
-    /* On ne le met pas en display:none sinon il n'est pas cliquable par JS dans certains cas */
-    /* On le déplace juste très loin hors de l'écran */
-    div[data-testid="stButton"]:has(button:contains("INTEGRITY_TRIGGER")) {
-        position: absolute !important;
-        left: -9999px !important;
-        top: -9999px !important;
-        height: 0 !important;
-        width: 0 !important;
-        overflow: hidden !important;
-    }
-
+    /* NAV FALLBACK */
     .nav-fallback {
         background-color: var(--navy);
         padding: 15px; border-radius: 12px;
         display: flex; justify-content: center; gap: 15px;
         margin-bottom: 40px; border-bottom: 4px solid var(--orange-light);
     }
+    
+    div[data-testid="stButton"]:has(button:contains("INTEGRITY_TRIGGER")) { display: none !important; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -224,29 +205,25 @@ try:
     if status_doc.exists: st.session_state.exam_open = status_doc.to_dict().get('is_open', True)
 except: pass
 
-# --- LOGIQUE ANTI-TRICHE (BACKEND) ---
-# Ce bouton est cliqué par le JS.
+# --- LOGIQUE ANTI-TRICHE ---
+# Le bouton est cliqué par JS quand l'onglet change
 if st.button("INTEGRITY_TRIGGER", key="cheat_trigger"):
     st.session_state.cheats += 1
-    # On ne fait pas de rerun explicite ici pour éviter un flash, 
-    # Streamlit gère l'état au prochain cycle.
+    # On force un petit rechargement pour être sûr que la variable est prise en compte
+    st.rerun()
 
 # Helpers
 def get_col(name): return db.collection('artifacts').document(PROJET_ID).collection(name)
 def generate_pw(l=8): return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(l))
 
 def get_algeria_time_str(timestamp):
-    """Convertit un timestamp UTC en heure Algérie (UTC+1)"""
-    if not timestamp: return "--:--"
+    """Convertit un timestamp en heure Algérie (UTC+1)"""
     utc_dt = datetime.datetime.fromtimestamp(timestamp, datetime.timezone.utc)
     alg_dt = utc_dt + datetime.timedelta(hours=1)
     return alg_dt.strftime("%H:%M:%S")
 
-def normalize_name(name):
-    """Normalise un nom pour la comparaison (minuscule, sans espace extra)"""
-    return str(name).strip().lower()
-
 # --- 5. LOGIQUE MÉTIER DYNAMIQUE ---
+
 def save_exam_config(title, pdf_b64, questions):
     data = {
         "title": title, "pdf_b64": pdf_b64, "questions": questions,
@@ -273,30 +250,19 @@ def display_pdf(b64_string):
     else:
         st.warning("PDF non disponible.")
 
-# --- 6. GÉNÉRATION DE RAPPORTS (OFFICIEL) ---
+# --- 6. GÉNÉRATION DE RAPPORTS ---
+
 class ReportPDF(FPDF):
     def header(self):
-        # En-tête officiel
-        self.set_font('Arial', 'B', 10)
-        self.cell(0, 5, "REPUBLIQUE ALGERIENNE DEMOCRATIQUE ET POPULAIRE", 0, 1, 'C')
-        self.cell(0, 5, "MINISTERE DE LA FORMATION ET DE L'ENSEIGNEMENT PROFESSIONNELS", 0, 1, 'C')
-        self.set_font('Arial', 'B', 9)
-        self.cell(0, 5, "INSFP BELAZZOUG ATHMANE BBA 01", 0, 1, 'C')
-        self.ln(10)
-        
-        # Titre du document
-        self.set_fill_color(245, 124, 0) # Orange Pro
+        self.set_font('Arial', 'B', 12)
+        self.cell(0, 10, "REPUBLIQUE ALGERIENNE DEMOCRATIQUE ET POPULAIRE", 0, 1, 'C')
+        self.cell(0, 10, "INSFP BELAZZOUG ATHMANE BBA 01", 0, 1, 'C')
+        self.ln(5)
+        self.set_fill_color(245, 124, 0) # Orange
         self.set_text_color(255, 255, 255)
-        self.set_font('Arial', 'B', 14)
-        self.cell(0, 12, "PROCES VERBAL D'EXAMEN - ASR PRO", 1, 1, 'C', 1)
+        self.cell(0, 10, "PROCES VERBAL D'EXAMEN - ASR PRO", 1, 1, 'C', 1)
         self.set_text_color(0, 0, 0)
-        self.ln(5)
-        
-        # Info Session
-        self.set_font('Arial', 'I', 10)
-        now = datetime.datetime.now() + datetime.timedelta(hours=1)
-        self.cell(0, 10, f"Genere le : {now.strftime('%d/%m/%Y à %H:%M')}", 0, 1, 'R')
-        self.ln(5)
+        self.ln(10)
 
     def footer(self):
         self.set_y(-15)
@@ -307,54 +273,36 @@ def generate_final_report_pdf(stats, results_df):
     pdf = ReportPDF()
     pdf.add_page()
     
-    # 1. Statistiques Globales (Cadre)
+    # 1. Statistiques Globales
     pdf.set_font("Arial", "B", 12)
-    pdf.cell(0, 10, "1. STATISTIQUES DE LA SESSION", 0, 1)
-    
+    pdf.cell(0, 10, "1. STATISTIQUES GLOBALES", 0, 1)
     pdf.set_font("Arial", "", 11)
-    pdf.cell(90, 10, f"Candidats Presents: {stats['present']}", 1)
-    pdf.cell(90, 10, f"Moyenne de Section: {stats['moyenne']}/20", 1, 1)
-    pdf.cell(90, 10, f"Meilleure Note: {stats['max']}/20", 1)
-    pdf.cell(90, 10, f"Note Minimale: {stats['min']}/20", 1, 1)
+    pdf.cell(50, 10, f"Nombre de presents: {stats['present']}")
+    pdf.cell(50, 10, f"Moyenne de section: {stats['moyenne']}/20", 0, 1)
+    pdf.cell(50, 10, f"Meilleure note: {stats['max']}/20")
+    pdf.cell(50, 10, f"Note minimale: {stats['min']}/20", 0, 1)
     pdf.ln(10)
 
-    # 2. Liste des Résultats (Tableau)
+    # 2. Liste des Résultats
     pdf.set_font("Arial", "B", 12)
-    pdf.cell(0, 10, "2. LISTE DETAILLEE ET EMARGEMENT NUMERIQUE", 0, 1)
+    pdf.cell(0, 10, "2. LISTE DETAILLEE DES RESULTATS", 0, 1)
     
     # Table Header
-    pdf.set_fill_color(220, 220, 220)
+    pdf.set_fill_color(200, 200, 200)
     pdf.set_font("Arial", "B", 10)
     pdf.cell(80, 10, "Nom & Prenom", 1, 0, 'C', 1)
     pdf.cell(30, 10, "Note /20", 1, 0, 'C', 1)
-    pdf.cell(30, 10, "Heure Remise", 1, 0, 'C', 1)
-    pdf.cell(50, 10, "Observations (Triche)", 1, 1, 'C', 1)
+    pdf.cell(40, 10, "Heure Remise", 1, 0, 'C', 1)
+    pdf.cell(40, 10, "Obs (Triche)", 1, 1, 'C', 1)
     
     # Table Rows
     pdf.set_font("Arial", "", 10)
     for index, row in results_df.iterrows():
         pdf.cell(80, 10, str(row['Nom']), 1)
-        
-        # Couleur si note < 10
-        if float(row['Note']) < 10:
-            pdf.set_text_color(200, 0, 0)
         pdf.cell(30, 10, str(row['Note']), 1, 0, 'C')
-        pdf.set_text_color(0, 0, 0)
-        
-        pdf.cell(30, 10, str(row['Heure']), 1, 0, 'C')
-        
-        # Alerte Triche
-        obs = "RAS"
-        if row['Alertes'] > 0:
-            obs = f"ALERTE ({int(row['Alertes'])})"
-            pdf.set_text_color(255, 0, 0) # Rouge
-            pdf.set_font("Arial", "B", 10)
-        
-        pdf.cell(50, 10, obs, 1, 1, 'C')
-        
-        # Reset style
-        pdf.set_text_color(0, 0, 0)
-        pdf.set_font("Arial", "", 10)
+        pdf.cell(40, 10, str(row['Heure']), 1, 0, 'C')
+        obs = f"{row['Alertes']} alerte(s)" if row['Alertes'] > 0 else "RAS"
+        pdf.cell(40, 10, obs, 1, 1, 'C')
 
     return pdf.output(dest='S').encode('latin-1')
 
@@ -372,6 +320,7 @@ def generate_pdf_credentials(users_list):
     return pdf.output(dest='S').encode('latin-1')
 
 # --- 7. VUES ---
+
 def show_header():
     st.markdown("""
         <div style="text-align:center; margin-bottom: 40px;">
@@ -397,7 +346,6 @@ def teacher_dash():
     show_header()
     u_list, r_list = fetch_dashboard_data()
     
-    # Bouton de rafraîchissement manuel
     if st.button("🔄 Actualiser les données"):
         fetch_dashboard_data.clear()
         st.rerun()
@@ -441,50 +389,42 @@ def teacher_dash():
         avg = pd.DataFrame(r_list)['score'].mean() if r_list else 0
         col_m[3].metric("Moyenne", f"{avg:.2f}")
 
-    # --- ONGLET 3 : GESTION (AVEC ANTI-DOUBLON RENFORCÉ) ---
+    # --- ONGLET 3 : GESTION (AVEC ANTI-DOUBLON) ---
     with tab3:
         c1, c2 = st.columns(2)
         with c1:
             up_f = st.file_uploader("Importer fichier Excel", type=['xlsx'])
             if up_f and st.button("LANCER IMPORTATION"):
-                try:
-                    df = pd.read_excel(up_f)
-                    # Création d'un set de noms normalisés existants pour comparaison rapide
-                    existing_names_norm = {normalize_name(u['name']) for u in u_list}
-                    count_added = 0
-                    
-                    for name in df.iloc[:, 0].dropna():
-                        clean_name = str(name).strip()
-                        if normalize_name(clean_name) not in existing_names_norm: 
-                            uid = clean_name.lower().replace(" ", ".") + str(random.randint(10,99))
-                            get_col('users').add({"name": clean_name, "username": uid, "password": generate_pw(), "role": "student"})
-                            count_added += 1
-                    
-                    fetch_dashboard_data.clear() # Vider le cache pour voir les nouveaux
-                    if count_added > 0:
-                        st.success(f"{count_added} nouveaux étudiants ajoutés.")
-                    else:
-                        st.warning("Aucun nouvel étudiant ajouté (tous existent déjà).")
-                    time.sleep(1); st.rerun()
-                except Exception as e:
-                    st.error(f"Erreur d'importation: {e}")
-
+                df = pd.read_excel(up_f)
+                existing_names = [u['name'] for u in u_list]
+                count_added = 0
+                
+                for name in df.iloc[:, 0].dropna():
+                    if name not in existing_names: # Vérification anti-doublon
+                        uid = name.lower().replace(" ", ".") + str(random.randint(10,99))
+                        get_col('users').add({"name": name, "username": uid, "password": generate_pw(), "role": "student"})
+                        count_added += 1
+                
+                fetch_dashboard_data.clear()
+                st.success(f"{count_added} nouveaux étudiants ajoutés.")
+                time.sleep(1); st.rerun()
         with c2:
             if u_list: 
                 st.download_button("📥 FICHES ACCÈS (PDF)", generate_pdf_credentials(u_list), "Acces_ASR.pdf")
-                
-                # Affichage sécurisé
+                # Correction KeyError : On s'assure que le DataFrame a les colonnes
                 df_users = pd.DataFrame(u_list)
-                required_cols = ['name', 'username', 'password']
-                for c in required_cols:
+                # On force les colonnes si le DataFrame est vide ou partiel
+                cols = ['name', 'username', 'password']
+                for c in cols:
                     if c not in df_users.columns: df_users[c] = ""
-                st.dataframe(df_users[required_cols], use_container_width=True)
+                st.dataframe(df_users[cols], use_container_width=True)
             else:
                 st.info("Aucun étudiant inscrit.")
 
     # --- ONGLET 4 : CORRECTION & RAPPORT (TRI TEMPOREL) ---
     with tab4:
         if r_list:
+            # Préparation des données pour le tableau
             data_for_df = []
             for r in r_list:
                 ts = r.get('timestamp', 0)
@@ -493,12 +433,12 @@ def teacher_dash():
                     "Nom": r['name'],
                     "Note": r['score'],
                     "Alertes": r.get('cheats', 0),
-                    "Heure": get_algeria_time_str(ts),
-                    "timestamp": ts 
+                    "Heure": get_algeria_time_str(ts), # Heure Algérie
+                    "timestamp": ts # Pour le tri
                 })
             
             df_res = pd.DataFrame(data_for_df)
-            # Tri par timestamp croissant (Premier arrivé en haut)
+            # Tri par timestamp croissant (premier arrivé en haut)
             df_res = df_res.sort_values(by='timestamp', ascending=True)
             
             # Bouton Rapport Officiel
@@ -509,31 +449,23 @@ def teacher_dash():
                 "min": df_res['Note'].min()
             }
             pdf_report = generate_final_report_pdf(stats, df_res)
+            st.download_button("📄 TÉLÉCHARGER PROCES VERBAL OFFICIEL (PDF)", pdf_report, "PV_Examen_ASR.pdf", mime="application/pdf")
             
-            st.download_button(
-                "📄 TÉLÉCHARGER PROCES VERBAL OFFICIEL (PDF)", 
-                pdf_report, 
-                "PV_Examen_ASR.pdf", 
-                mime="application/pdf",
-                help="Génère un rapport officiel avec stats et liste d'émargement"
-            )
-            
-            st.markdown("### Liste des copies (Par ordre d'arrivée)")
+            st.markdown("### Liste des copies (Triée par ordre de remise)")
             sel = st.dataframe(df_res.drop(columns=["ID", "timestamp"]), use_container_width=True, on_select="rerun", selection_mode="single-row")
             
             if sel and sel.selection.rows:
+                # Retrouver la ligne sélectionnée dans le dataframe trié
                 selected_row_idx = sel.selection.rows[0]
-                # Attention: st.dataframe affiche l'index original si on ne reset pas,
-                # mais ici df_res est trié. On utilise iloc.
                 selected_data = df_res.iloc[selected_row_idx]
                 doc_id = selected_data['ID']
                 
+                # Retrouver les données complètes (réponses) dans r_list
                 full_data = next((item for item in r_list if item["id"] == doc_id), None)
                 
                 if full_data:
                     st.markdown(f'<div class="white-card"><h2>{full_data["name"]}</h2><h1>{full_data["score"]} / 20</h1></div>', unsafe_allow_html=True)
                     st.markdown(f"**Remis à :** {get_algeria_time_str(full_data.get('timestamp',0))}")
-                    st.markdown(f"**Infractions détectées :** {full_data.get('cheats', 0)}")
                     
                     st.markdown("### Réponses Soumises")
                     for q_id, ans in full_data.get('answers', {}).items():
@@ -582,11 +514,7 @@ def exam_view():
         else: st.info("Sujet papier.")
     
     with col_form:
-        # Affichage du compteur triche pour dissuasion
-        st.markdown(f"### ✍️ Réponses")
-        if st.session_state.cheats > 0:
-            st.error(f"⚠️ ATTENTION : {st.session_state.cheats} ALERTE(S) DE TRICHE ENREGISTRÉE(S)")
-        
+        st.markdown(f"### ✍️ Réponses ({st.session_state.cheats} 🚩)")
         with st.form("exam_sub"):
             for q in exam_config.get('questions', []):
                 qid = str(q['id'])
@@ -600,6 +528,7 @@ def exam_view():
                 for q in exam_config.get('questions', []):
                     pts = q['points']; max_score += pts
                     qid = str(q['id'])
+                    # Logique simple de correction (longueur code > 10 ou égalité texte)
                     if q['type'] == 'code':
                         if len(st.session_state.codes.get(qid,"")) > 10: score += pts
                     elif str(st.session_state.answers.get(qid,"")).lower() == str(q['correct']).lower():
@@ -612,7 +541,7 @@ def exam_view():
                     "score": final_score,
                     "answers": st.session_state.answers, "codes": st.session_state.codes,
                     "cheats": st.session_state.cheats,
-                    "timestamp": time.time()
+                    "timestamp": time.time() # Timestamp serveur pour le tri
                 })
                 st.success("Envoyé !"); time.sleep(2); st.session_state.page = "👤 Espace Candidat"; st.rerun()
 
