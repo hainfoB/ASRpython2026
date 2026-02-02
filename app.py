@@ -20,45 +20,62 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. SÉCURITÉ & PROTECTION (CORRECTIF ANTI-TRICHE) ---
-# On utilise CSS pour cacher le bouton de manière à ce qu'il reste "cliquable" par le JS
-st.markdown("""
-    <style>
-    /* Cacher le bouton intégrité visuellement mais le garder dans le DOM */
-    div[data-testid="stButton"]:has(button:contains("INTEGRITY_TRIGGER")) {
-        position: absolute !important;
-        opacity: 0 !important;
-        height: 0 !important;
-        width: 0 !important;
-        overflow: hidden !important;
-        left: -9999px !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
+# --- 2. SÉCURITÉ & PROTECTION (CORRECTIF ANTI-TRICHE & MASQUAGE BOUTON) ---
 st.components.v1.html("""
     <script>
+    // Désactiver le clic droit et le copier-coller
     document.addEventListener('contextmenu', event => event.preventDefault());
     document.addEventListener('copy', e => e.preventDefault());
     document.addEventListener('paste', e => e.preventDefault());
     
-    function triggerCheat() {
+    // Fonction de masquage agressif du bouton Trigger
+    function hideTriggerButton() {
         const buttons = window.parent.document.querySelectorAll('button');
         for (const btn of buttons) {
             if (btn.innerText.includes('INTEGRITY_TRIGGER')) {
-                btn.click();
-                break;
+                // On remonte au conteneur parent (div stButton)
+                const container = btn.closest('div[data-testid="stButton"]');
+                if (container) {
+                    // On le déplace hors de l'écran sans le supprimer du DOM
+                    container.style.position = 'absolute';
+                    container.style.top = '-9999px';
+                    container.style.left = '-9999px';
+                    container.style.width = '0';
+                    container.style.height = '0';
+                    container.style.overflow = 'hidden';
+                    container.style.opacity = '0';
+                    container.style.zIndex = '-1000';
+                }
             }
         }
     }
 
-    // Détection agressive du changement d'onglet
+    // Fonction pour déclencher la triche
+    function triggerCheat() {
+        const buttons = window.parent.document.querySelectorAll('button');
+        let clicked = false;
+        for (const btn of buttons) {
+            if (btn.innerText.includes('INTEGRITY_TRIGGER')) {
+                btn.click();
+                clicked = true;
+                console.log("Infraction détectée : Trigger activé.");
+                break;
+            }
+        }
+        if (!clicked) console.log("Bouton Trigger introuvable.");
+    }
+
+    // Surveillance en boucle (Masquage visuel permanent)
+    setInterval(hideTriggerButton, 50);
+
+    // Détection changement d'onglet (API Visibility)
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
             triggerCheat();
         }
     });
 
+    // Détection perte de focus (Clic hors fenêtre)
     window.addEventListener('blur', function() {
         triggerCheat();
     });
