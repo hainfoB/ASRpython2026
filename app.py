@@ -409,8 +409,17 @@ def teacher_dash():
                 st.success(f"{count_added} nouveaux étudiants ajoutés.")
                 time.sleep(1); st.rerun()
         with c2:
-            if u_list: st.download_button("📥 FICHES ACCÈS (PDF)", generate_pdf_credentials(u_list), "Acces_ASR.pdf")
-            st.dataframe(pd.DataFrame(u_list)[['name', 'username', 'password']], use_container_width=True)
+            if u_list: 
+                st.download_button("📥 FICHES ACCÈS (PDF)", generate_pdf_credentials(u_list), "Acces_ASR.pdf")
+                # Correction KeyError : On s'assure que le DataFrame a les colonnes
+                df_users = pd.DataFrame(u_list)
+                # On force les colonnes si le DataFrame est vide ou partiel
+                cols = ['name', 'username', 'password']
+                for c in cols:
+                    if c not in df_users.columns: df_users[c] = ""
+                st.dataframe(df_users[cols], use_container_width=True)
+            else:
+                st.info("Aucun étudiant inscrit.")
 
     # --- ONGLET 4 : CORRECTION & RAPPORT (TRI TEMPOREL) ---
     with tab4:
@@ -463,6 +472,35 @@ def teacher_dash():
                         st.markdown(f"**Q{q_id}**: {ans}")
                     for q_id, code in full_data.get('codes', {}).items():
                         st.code(code, language='python')
+
+def info_view():
+    show_header()
+    st.markdown("""
+        <div class="white-card">
+            <h2>ℹ️ Informations & Modalités</h2>
+            <p>Bienvenue sur la plateforme d'examen numérique ASR Pro.</p>
+            <ul>
+                <li><strong>Format :</strong> Examen pratique dynamique. Le sujet est affiché au format PDF.</li>
+                <li><strong>Outils :</strong> Vous disposez d'un environnement Python intégré et de champs de réponse.</li>
+                <li><strong>Règles :</strong> Travail strictement individuel. La surveillance est active (détection de sortie).</li>
+                <li><strong>Validation :</strong> Pensez à cliquer sur "TERMINER" pour soumettre votre copie.</li>
+            </ul>
+        </div>
+    """, unsafe_allow_html=True)
+
+def faq_view():
+    show_header()
+    st.markdown("""
+        <div class="white-card">
+            <h2>❓ Foire Aux Questions</h2>
+            <ul>
+                <li><strong>Comment se connecter ?</strong> Utilisez les identifiants fournis par votre enseignant ou sur la fiche d'accès.</li>
+                <li><strong>Que faire si le sujet ne s'affiche pas ?</strong> Actualisez la page (F5) ou contactez le surveillant.</li>
+                <li><strong>Puis-je sortir de la page pour aller sur Google ?</strong> Non, le système détecte toute sortie et cela peut être sanctionné.</li>
+                <li><strong>La sauvegarde est-elle automatique ?</strong> Non, vous devez cliquer sur "TERMINER" pour envoyer votre copie finale.</li>
+            </ul>
+        </div>
+    """, unsafe_allow_html=True)
 
 def exam_view():
     if not st.session_state.exam_open: show_header(); st.error("🔒 Examen verrouillé."); return
@@ -527,7 +565,7 @@ def login_view():
     st.markdown('</div>', unsafe_allow_html=True)
 
 # --- ROUTAGE ---
-pages = ["🏠 Accueil"]
+pages = ["🏠 Accueil", "ℹ️ Infos", "❓ FAQ"]
 if st.session_state.user:
     if st.session_state.user.get('role') == 'teacher': pages.append("📊 Tableau de Bord")
     else: pages.append("👤 Espace Candidat")
@@ -557,6 +595,8 @@ elif selected_page != st.session_state.page: st.session_state.page = selected_pa
 p = st.session_state.page
 if p == '📊 Tableau de Bord': teacher_dash()
 elif p == 'exam': exam_view()
+elif p == 'ℹ️ Infos': info_view()
+elif p == '❓ FAQ': faq_view()
 elif p == '👤 Espace Candidat': 
     show_header()
     if st.session_state.exam_open:
