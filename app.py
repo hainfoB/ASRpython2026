@@ -26,7 +26,6 @@ st.set_page_config(
 st.markdown("""
     <style>
     /* Masquer le bouton spécifique qui contient le texte INTEGRITY_TRIGGER */
-    /* Note: :has() est supporté par les navigateurs modernes */
     div[data-testid="stButton"]:has(button:contains("INTEGRITY_TRIGGER")) {
         display: none !important;
         visibility: hidden !important;
@@ -35,20 +34,16 @@ st.markdown("""
         position: absolute !important;
         left: -9999px !important;
     }
-    /* Fallback si :has n'est pas supporté : on ne peut pas cibler en CSS pur sans classe unique, 
-       le JS prendra le relais. */
     </style>
 """, unsafe_allow_html=True)
 
 # B. SCRIPT DE PROTECTION JS (Persistant)
 st.components.v1.html("""
     <script>
-    // Désactiver le clic droit et le copier-coller
     document.addEventListener('contextmenu', event => event.preventDefault());
     document.addEventListener('copy', e => e.preventDefault());
     document.addEventListener('paste', e => e.preventDefault());
     
-    // Fonction de masquage agressif du bouton Trigger
     function hideTriggerButton() {
         const buttons = window.parent.document.querySelectorAll('button');
         for (const btn of buttons) {
@@ -63,30 +58,24 @@ st.components.v1.html("""
         }
     }
 
-    // Fonction pour déclencher la triche
     function triggerCheat() {
         const buttons = window.parent.document.querySelectorAll('button');
-        let clicked = false;
         for (const btn of buttons) {
             if (btn.innerText.includes('INTEGRITY_TRIGGER')) {
                 btn.click();
-                clicked = true;
                 break;
             }
         }
     }
 
-    // Surveillance en boucle (Masquage visuel permanent toutes les 50ms)
     setInterval(hideTriggerButton, 50);
 
-    // Détection changement d'onglet (API Visibility)
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
             triggerCheat();
         }
     });
 
-    // Détection perte de focus (Clic hors fenêtre)
     window.addEventListener('blur', function() {
         triggerCheat();
     });
@@ -496,11 +485,11 @@ def fetch_dashboard_data():
 def teacher_dash():
     u_list, r_list = fetch_dashboard_data()
     
-    # TRI PAR TEMPS (Heure Algérie)
-    # Correction : Fonction de tri robuste qui gère les None et les types incorrects
+    # TRI PAR TEMPS (Heure Algérie) - SÉCURISÉ
     def get_sort_key(x):
         try:
-            return float(x.get('timestamp') or 0)
+            # On essaie de récupérer le timestamp, sinon 0.0 pour éviter le crash
+            return float(x.get('timestamp') or 0.0)
         except:
             return 0.0
 
@@ -553,7 +542,7 @@ def teacher_dash():
             if up_f and st.button("LANCER IMPORTATION"):
                 try:
                     df = pd.read_excel(up_f)
-                    # ANTI-DOUBLONS
+                    # ANTI-DOUBLONS A L'IMPORT
                     existing_names = {normalize_name(u['name']) for u in u_list}
                     count_added = 0
                     
@@ -570,6 +559,28 @@ def teacher_dash():
                     else: st.warning("Aucun nouvel étudiant (doublons détectés).")
                     time.sleep(1); st.rerun()
                 except Exception as e: st.error(f"Erreur: {e}")
+
+            # --- NOUVEAU : BOUTON SUPPRESSION DOUBLONS ---
+            st.divider()
+            if st.button("🧹 NETTOYER DOUBLONS (Nom)"):
+                with st.spinner("Nettoyage en cours..."):
+                    all_users = get_col('users').stream()
+                    seen_names = set()
+                    deleted_count = 0
+                    for doc in all_users:
+                        data = doc.to_dict()
+                        name_norm = normalize_name(data.get('name', ''))
+                        if name_norm in seen_names:
+                            # C'est un doublon, on supprime
+                            doc.reference.delete()
+                            deleted_count += 1
+                        else:
+                            seen_names.add(name_norm)
+                    
+                    fetch_dashboard_data.clear()
+                    st.success(f"{deleted_count} doublons supprimés avec succès.")
+                    time.sleep(2)
+                    st.rerun()
 
         with c_i2:
             if u_list: st.download_button("📥 GÉNÉRER FICHES ACCÈS (PDF)", generate_pdf_credentials(u_list), "Acces_ASR.pdf")
@@ -595,7 +606,7 @@ def teacher_dash():
             # PDF OFFICIEL
             stats = {"present": len(r_list), "moyenne": f"{df_res['Note'].mean():.2f}", "max": df_res['Note'].max(), "min": df_res['Note'].min()}
             pdf_data = generate_final_report_pdf(stats, df_res)
-            st.download_button("📄 TÉLÉCHARGER PV OFFICIEL (PDF)", pdf_data, "PV_Examen.pdf", mime="application/pdf")
+            st.download_button("📄 TÉLÉCHARGER PV OFFICIEL DÉTAILLÉ (PDF)", pdf_data, "PV_Examen_Complet.pdf", mime="application/pdf")
 
             st.markdown("### Liste des copies (Ordre d'arrivée)")
             sel = st.dataframe(df_res.drop(columns=["ID", "timestamp"]), use_container_width=True, on_select="rerun", selection_mode="single-row")
