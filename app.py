@@ -380,29 +380,38 @@ def teacher_dash():
         with c1:
             up_f = st.file_uploader("Importer fichier Excel", type=['xlsx'])
             if up_f and st.button("LANCER IMPORTATION"):
-                df = pd.read_excel(up_f)
-                existing_names = [u['name'] for u in u_list]
-                count_added = 0
-                
-                for name in df.iloc[:, 0].dropna():
-                    if name not in existing_names: 
-                        uid = name.lower().replace(" ", ".") + str(random.randint(10,99))
-                        get_col('users').add({"name": name, "username": uid, "password": generate_pw(), "role": "student"})
-                        count_added += 1
-                
-                fetch_dashboard_data.clear()
-                st.success(f"{count_added} nouveaux étudiants ajoutés.")
-                time.sleep(1); st.rerun()
+                try:
+                    df = pd.read_excel(up_f)
+                    existing_names = [u['name'] for u in u_list]
+                    count_added = 0
+                    
+                    for name in df.iloc[:, 0].dropna():
+                        if name not in existing_names: 
+                            uid = name.lower().replace(" ", ".") + str(random.randint(10,99))
+                            get_col('users').add({"name": name, "username": uid, "password": generate_pw(), "role": "student"})
+                            count_added += 1
+                    
+                    fetch_dashboard_data.clear()
+                    st.success(f"{count_added} nouveaux étudiants ajoutés.")
+                    time.sleep(1); st.rerun()
+                except Exception as e:
+                    st.error(f"Erreur d'importation: {e}")
+
         with c2:
             if u_list: 
                 st.download_button("📥 FICHES ACCÈS (PDF)", generate_pdf_credentials(u_list), "Acces_ASR.pdf")
-                # Correction KeyError : Création sécurisée du DataFrame
+                
+                # --- CORRECTION DU KEYERROR ICI ---
+                # Création sécurisée du DataFrame
                 df_users = pd.DataFrame(u_list)
-                # On s'assure que les colonnes existent
+                
+                # On s'assure que les colonnes requises existent
                 required_cols = ['name', 'username', 'password']
                 for c in required_cols:
-                    if c not in df_users.columns: df_users[c] = ""
-                # Affichage sûr
+                    if c not in df_users.columns: 
+                        df_users[c] = ""
+                
+                # Affichage sécurisé avec uniquement les colonnes requises
                 st.dataframe(df_users[required_cols], use_container_width=True)
             else:
                 st.info("Aucun étudiant inscrit.")
