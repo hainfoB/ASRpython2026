@@ -21,14 +21,12 @@ st.set_page_config(
 )
 
 # --- 2. SÉCURITÉ & PROTECTION (RENFORCÉE) ---
-# Utilisation de 'visibilitychange' pour mieux détecter le changement d'onglet
 st.components.v1.html("""
     <script>
     document.addEventListener('contextmenu', event => event.preventDefault());
     document.addEventListener('copy', e => e.preventDefault());
     document.addEventListener('paste', e => e.preventDefault());
     
-    // Détection agressive du changement d'onglet/fenêtre
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
             triggerCheat();
@@ -68,7 +66,6 @@ st.markdown("""
 
     [data-testid="stSidebar"] { display: none; }
     
-    /* BOUTONS (ORANGE FONCÉ) */
     .stButton > button, [data-testid="stFormSubmitButton"] > button, .stDownloadButton > button {
         background-color: var(--orange-dark) !important;
         color: white !important;
@@ -86,7 +83,6 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(245, 124, 0, 0.4) !important;
     }
 
-    /* HEADER */
     .hb-logo {
         width: 90px; height: 90px; background: white;
         border: 6px solid var(--orange-light); border-radius: 50%;
@@ -95,7 +91,6 @@ st.markdown("""
         box-shadow: 0 0 25px rgba(245, 124, 0, 0.6);
     }
 
-    /* LABELS BLANCS ET GRANDS */
     [data-testid="stWidgetLabel"] p, label, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3 {
         color: #ffffff !important;
         font-size: 1.5rem !important;
@@ -107,7 +102,6 @@ st.markdown("""
         font-weight: bold;
     }
 
-    /* CARTES */
     .white-card {
         background-color: var(--white) !important;
         padding: 40px !important;
@@ -119,7 +113,6 @@ st.markdown("""
     }
     .white-card *, .white-card h1, .white-card h2 { color: var(--midnight) !important; }
     
-    /* STATISTIQUES (KPI) */
     [data-testid="stMetric"] {
         background-color: var(--white) !important;
         padding: 30px 10px !important;
@@ -146,7 +139,6 @@ st.markdown("""
         line-height: 1.1 !important;
     }
 
-    /* FILE UPLOADER CUSTOM */
     [data-testid="stFileUploaderDropzoneInstructions"], [data-testid="stFileUploaderDropzone"] div small { display: none !important; }
     [data-testid="stFileUploaderDropzone"] {
         border: 2px dashed var(--orange-dark) !important;
@@ -159,7 +151,6 @@ st.markdown("""
         border: none !important;
     }
 
-    /* NAV FALLBACK */
     .nav-fallback {
         background-color: var(--navy);
         padding: 15px; border-radius: 12px;
@@ -206,10 +197,8 @@ try:
 except: pass
 
 # --- LOGIQUE ANTI-TRICHE ---
-# Le bouton est cliqué par JS quand l'onglet change
 if st.button("INTEGRITY_TRIGGER", key="cheat_trigger"):
     st.session_state.cheats += 1
-    # On force un petit rechargement pour être sûr que la variable est prise en compte
     st.rerun()
 
 # Helpers
@@ -217,13 +206,11 @@ def get_col(name): return db.collection('artifacts').document(PROJET_ID).collect
 def generate_pw(l=8): return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(l))
 
 def get_algeria_time_str(timestamp):
-    """Convertit un timestamp en heure Algérie (UTC+1)"""
     utc_dt = datetime.datetime.fromtimestamp(timestamp, datetime.timezone.utc)
     alg_dt = utc_dt + datetime.timedelta(hours=1)
     return alg_dt.strftime("%H:%M:%S")
 
 # --- 5. LOGIQUE MÉTIER DYNAMIQUE ---
-
 def save_exam_config(title, pdf_b64, questions):
     data = {
         "title": title, "pdf_b64": pdf_b64, "questions": questions,
@@ -251,7 +238,6 @@ def display_pdf(b64_string):
         st.warning("PDF non disponible.")
 
 # --- 6. GÉNÉRATION DE RAPPORTS ---
-
 class ReportPDF(FPDF):
     def header(self):
         self.set_font('Arial', 'B', 12)
@@ -320,7 +306,6 @@ def generate_pdf_credentials(users_list):
     return pdf.output(dest='S').encode('latin-1')
 
 # --- 7. VUES ---
-
 def show_header():
     st.markdown("""
         <div style="text-align:center; margin-bottom: 40px;">
@@ -400,7 +385,7 @@ def teacher_dash():
                 count_added = 0
                 
                 for name in df.iloc[:, 0].dropna():
-                    if name not in existing_names: # Vérification anti-doublon
+                    if name not in existing_names: 
                         uid = name.lower().replace(" ", ".") + str(random.randint(10,99))
                         get_col('users').add({"name": name, "username": uid, "password": generate_pw(), "role": "student"})
                         count_added += 1
@@ -411,20 +396,20 @@ def teacher_dash():
         with c2:
             if u_list: 
                 st.download_button("📥 FICHES ACCÈS (PDF)", generate_pdf_credentials(u_list), "Acces_ASR.pdf")
-                # Correction KeyError : On s'assure que le DataFrame a les colonnes
+                # Correction KeyError : Création sécurisée du DataFrame
                 df_users = pd.DataFrame(u_list)
-                # On force les colonnes si le DataFrame est vide ou partiel
-                cols = ['name', 'username', 'password']
-                for c in cols:
+                # On s'assure que les colonnes existent
+                required_cols = ['name', 'username', 'password']
+                for c in required_cols:
                     if c not in df_users.columns: df_users[c] = ""
-                st.dataframe(df_users[cols], use_container_width=True)
+                # Affichage sûr
+                st.dataframe(df_users[required_cols], use_container_width=True)
             else:
                 st.info("Aucun étudiant inscrit.")
 
     # --- ONGLET 4 : CORRECTION & RAPPORT (TRI TEMPOREL) ---
     with tab4:
         if r_list:
-            # Préparation des données pour le tableau
             data_for_df = []
             for r in r_list:
                 ts = r.get('timestamp', 0)
@@ -433,15 +418,13 @@ def teacher_dash():
                     "Nom": r['name'],
                     "Note": r['score'],
                     "Alertes": r.get('cheats', 0),
-                    "Heure": get_algeria_time_str(ts), # Heure Algérie
-                    "timestamp": ts # Pour le tri
+                    "Heure": get_algeria_time_str(ts),
+                    "timestamp": ts 
                 })
             
             df_res = pd.DataFrame(data_for_df)
-            # Tri par timestamp croissant (premier arrivé en haut)
             df_res = df_res.sort_values(by='timestamp', ascending=True)
             
-            # Bouton Rapport Officiel
             stats = {
                 "present": len(r_list),
                 "moyenne": f"{df_res['Note'].mean():.2f}",
@@ -455,12 +438,10 @@ def teacher_dash():
             sel = st.dataframe(df_res.drop(columns=["ID", "timestamp"]), use_container_width=True, on_select="rerun", selection_mode="single-row")
             
             if sel and sel.selection.rows:
-                # Retrouver la ligne sélectionnée dans le dataframe trié
                 selected_row_idx = sel.selection.rows[0]
                 selected_data = df_res.iloc[selected_row_idx]
                 doc_id = selected_data['ID']
                 
-                # Retrouver les données complètes (réponses) dans r_list
                 full_data = next((item for item in r_list if item["id"] == doc_id), None)
                 
                 if full_data:
@@ -528,7 +509,6 @@ def exam_view():
                 for q in exam_config.get('questions', []):
                     pts = q['points']; max_score += pts
                     qid = str(q['id'])
-                    # Logique simple de correction (longueur code > 10 ou égalité texte)
                     if q['type'] == 'code':
                         if len(st.session_state.codes.get(qid,"")) > 10: score += pts
                     elif str(st.session_state.answers.get(qid,"")).lower() == str(q['correct']).lower():
@@ -541,7 +521,7 @@ def exam_view():
                     "score": final_score,
                     "answers": st.session_state.answers, "codes": st.session_state.codes,
                     "cheats": st.session_state.cheats,
-                    "timestamp": time.time() # Timestamp serveur pour le tri
+                    "timestamp": time.time()
                 })
                 st.success("Envoyé !"); time.sleep(2); st.session_state.page = "👤 Espace Candidat"; st.rerun()
 
