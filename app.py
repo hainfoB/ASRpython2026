@@ -605,7 +605,7 @@ def teacher_dash():
             # PDF OFFICIEL SANS RÉPÉTITIONS
             stats = {"present": len(r_list), "moyenne": f"{df_res['Note'].mean():.2f}", "max": df_res['Note'].max(), "min": df_res['Note'].min()}
             pdf_data = generate_final_report_pdf(stats, df_res)
-            st.download_button("📄 TÉLÉCHARGER PV OFFICIEL SANS DOUBLONS (PDF)", pdf_data, "PV_Examen_Unique.pdf", mime="application/pdf")
+            st.download_button("📄 TÉLÉCHARGER PV OFFICIEL (PDF)", pdf_data, "PV_Examen_Unique.pdf", mime="application/pdf")
 
             st.markdown("### Liste des copies (Derniers envois par étudiant)")
             sel = st.dataframe(df_res.drop(columns=["ID", "timestamp"]), use_container_width=True, on_select="rerun", selection_mode="single-row")
