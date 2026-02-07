@@ -760,3 +760,56 @@ elif p == '🔐 Connexion': login_view()
 elif p == '📜 Énoncés': enonce_view()
 elif p == '❓ FAQ': faq_view()
 else: accueil_view()
+# --- DÉBUT DU BLOC D'EXPORTATION ---
+import json
+
+st.markdown("---")
+st.header("🔧 EXPORTATION POUR MIGRATION")
+st.info("Utilisez ce bouton pour générer le fichier JSON nécessaire à la nouvelle version.")
+
+if st.button("GÉNÉRER LE FICHIER JSON DE MIGRATION"):
+    # 1. Nom de votre collection dans l'ancienne version
+    # (C'était souvent 'results', 'examen_data' ou 'participants')
+    NOM_COLLECTION = 'results' 
+    
+    try:
+        if 'db' not in globals() or db is None:
+            st.error("Erreur : La connexion à la base de données (db) n'est pas active.")
+        else:
+            # Récupération des données brutes
+            docs = db.collection(NOM_COLLECTION).stream()
+            data_export = []
+            
+            for doc in docs:
+                d = doc.to_dict()
+                
+                # Création d'un objet propre
+                item = {
+                    "username": d.get("username", "inconnu"),
+                    "name": d.get("name", "Nom Inconnu"),
+                    "score": d.get("score", 0),
+                    "breakdown": d.get("breakdown", {}),
+                    "timestamp": d.get("timestamp", 0),
+                    "cheats": d.get("cheats", 0),
+                    # Tentative de récupération des réponses détaillées si elles existaient
+                    "answers": d.get("answers", {}),
+                    "codes": d.get("codes", {})
+                }
+                data_export.append(item)
+            
+            # Conversion en JSON
+            json_str = json.dumps(data_export, indent=2, default=str)
+            
+            st.success(f"✅ {len(data_export)} copies récupérées !")
+            
+            # Bouton de téléchargement
+            st.download_button(
+                label="📥 TÉLÉCHARGER backup_legacy.json",
+                data=json_str,
+                file_name="backup_legacy.json",
+                mime="application/json"
+            )
+            
+    except Exception as e:
+        st.error(f"Erreur durant l'export : {str(e)}")
+# --- FIN DU BLOC D'EXPORTATION ---
