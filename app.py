@@ -603,7 +603,18 @@ def teacher_dash():
                     d = doc.to_dict()
                     # Nettoyage pour JSON serializable
                     d['id'] = doc.id
-                    if 'timestamp' in d: d['timestamp'] = float(d['timestamp'])
+                    
+                    # Correction du timestamp (Gère float, string et datetime)
+                    if 'timestamp' in d: 
+                        ts = d['timestamp']
+                        try:
+                            if hasattr(ts, 'timestamp'): # Cas datetime
+                                d['timestamp'] = ts.timestamp()
+                            else:
+                                d['timestamp'] = float(ts)
+                        except:
+                            d['timestamp'] = 0.0
+
                     export_list.append(d)
                 
                 json_export = json.dumps(export_list, indent=2, default=str)
