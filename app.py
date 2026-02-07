@@ -195,7 +195,7 @@ st.markdown("""
 
 # --- 4. INITIALISATION FIREBASE ---
 db = None
-PROJET_ID = "examen-asr-prod-final"
+PROJET_ID = "examen-asr-prod"
 
 if not firebase_admin._apps:
     try:
