@@ -9,54 +9,72 @@ import random
 import string
 import io
 import json
+import base64
 from fpdf import FPDF
 
 # --- 1. CONFIGURATION DE LA PAGE ---
 st.set_page_config(
-    page_title="ASR Pro - Excellence Pédagogique",
+    page_title="ASR Pro - Excellence Pédagogique (LEGACY + RATTRAPAGE)",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. SÉCURITÉ & PROTECTION (OPTIMISÉE) ---
+# --- 2. SÉCURITÉ & PROTECTION ---
+st.markdown("""
+    <style>
+    div[data-testid="stButton"]:has(button:contains("INTEGRITY_TRIGGER")) {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        width: 0 !important;
+        position: absolute !important;
+        left: -9999px !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 st.components.v1.html("""
     <script>
     document.addEventListener('contextmenu', event => event.preventDefault());
     document.addEventListener('copy', e => e.preventDefault());
     document.addEventListener('paste', e => e.preventDefault());
     
-    function killSecurityButton() {
+    function hideTriggerButton() {
         const buttons = window.parent.document.querySelectorAll('button');
-        buttons.forEach(btn => {
+        for (const btn of buttons) {
             if (btn.innerText.includes('INTEGRITY_TRIGGER')) {
                 const container = btn.closest('div[data-testid="stButton"]');
                 if (container) {
-                    container.style.position = 'absolute';
-                    container.style.left = '-9999px';
-                    container.style.top = '-9999px';
+                    container.style.display = 'none';
                     container.style.visibility = 'hidden';
+                    container.style.position = 'absolute';
                 }
             }
-        });
+        }
     }
 
-    window.addEventListener('blur', function() {
+    function triggerCheat() {
         const buttons = window.parent.document.querySelectorAll('button');
-        for (let btn of buttons) {
+        for (const btn of buttons) {
             if (btn.innerText.includes('INTEGRITY_TRIGGER')) {
                 btn.click();
                 break;
             }
         }
+    }
+
+    setInterval(hideTriggerButton, 50);
+
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) { triggerCheat(); }
     });
 
-    // Fréquence réduite pour améliorer la fluidité (1000ms au lieu de 400ms)
-    setInterval(killSecurityButton, 1000);
+    window.addEventListener('blur', function() { triggerCheat(); });
     </script>
 """, height=0)
 
-# --- 3. DESIGN SYSTEM "ÉLITE" ET UI/UX ---
+# --- 3. DESIGN SYSTEM "ÉLITE" ---
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
@@ -76,10 +94,8 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
 
-    /* Suppression de la sidebar native */
     [data-testid="stSidebar"] { display: none; }
     
-    /* BOUTONS GLOBAUX (ORANGE FONCÉ, TEXTE BLANC) */
     .stButton > button, [data-testid="stFormSubmitButton"] > button, .stDownloadButton > button {
         background-color: var(--orange-dark) !important;
         color: white !important;
@@ -99,7 +115,6 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(245, 124, 0, 0.4) !important;
     }
 
-    /* HEADER & TEXTES */
     .hb-logo {
         width: 90px; height: 90px; background: white;
         border: 6px solid var(--orange-light); border-radius: 50%;
@@ -108,22 +123,19 @@ st.markdown("""
         box-shadow: 0 0 25px rgba(245, 124, 0, 0.6);
     }
 
-    /* LABELS DES WIDGETS (Input, Select...) - BLANCS ET GRANDS */
     [data-testid="stWidgetLabel"] p, label {
         color: #ffffff !important;
-        font-size: 1.5rem !important;
+        font-size: 1.1rem !important;
         font-weight: 700 !important;
         margin-bottom: 10px !important;
     }
     
-    /* Input text color fix */
     .stTextInput input {
         color: #333 !important;
         font-weight: bold;
     }
 
-    /* CARTES CONTENU (BLANCHES) */
-    .white-card, .report-card {
+    .white-card {
         background-color: var(--white) !important;
         padding: 40px !important;
         border-radius: 16px !important;
@@ -132,216 +144,189 @@ st.markdown("""
         box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
         margin-bottom: 20px;
     }
-    .white-card *, .report-card * { 
-        color: var(--midnight) !important; 
-    }
-    .white-card h1, .white-card h2, .white-card h3 {
-        color: var(--orange-dark) !important;
-    }
+    .white-card *, .white-card h1, .white-card h2, .white-card h3 { color: var(--midnight) !important; }
     
-    /* --- DESIGN SPÉCIFIQUE STATISTIQUES (KPI) --- */
     [data-testid="stMetric"] {
         background-color: var(--white) !important;
-        padding: 30px 10px !important;
+        padding: 25px 10px !important;
         border-radius: 16px !important;
         border-left: 10px solid var(--orange-light) !important;
         box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
         margin-bottom: 20px;
         text-align: center !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: center !important;
-        height: 100% !important;
     }
     
-    /* TITRE DE LA STATISTIQUE -> BLEU NUIT */
-    [data-testid="stMetricLabel"] {
-        width: 100% !important;
-        justify-content: center !important;
-    }
     [data-testid="stMetricLabel"] p {
         color: var(--midnight) !important;
-        font-size: 1.6rem !important;
+        font-size: 1.1rem !important;
         font-weight: 800 !important;
         text-transform: uppercase !important;
-        letter-spacing: 1px !important;
     }
 
-    /* CHIFFRE DE LA STATISTIQUE -> ORANGE FONCÉ & XXL */
     [data-testid="stMetricValue"] div {
         color: var(--orange-dark) !important;
-        font-size: 5rem !important; /* Agrandissement Max */
+        font-size: 2.8rem !important;
         font-weight: 900 !important;
-        line-height: 1.1 !important;
-        margin-top: 15px !important;
     }
     
-    /* --- DESIGN FILE UPLOADER (CUSTOM) --- */
-    /* Masquer le texte par défaut (Drag & Drop, Limit...) */
-    [data-testid="stFileUploaderDropzoneInstructions"], [data-testid="stFileUploaderDropzone"] div small {
-        display: none !important;
-    }
-    
-    /* Styliser le conteneur pour qu'il soit propre */
-    [data-testid="stFileUploaderDropzone"] {
-        border: 2px dashed var(--orange-dark) !important;
-        background-color: rgba(255,255,255,0.05) !important;
-        padding: 20px !important;
-        min-height: auto !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }
-    
-    /* Cibler le bouton "Browse files" à l'intérieur */
-    [data-testid="stFileUploaderDropzone"] button {
-        background-color: var(--orange-dark) !important;
-        color: white !important;
-        border: none !important;
-        font-weight: 800 !important;
-        font-size: 1.1rem !important;
-        padding: 10px 25px !important;
-        border-radius: 8px !important;
-        width: auto !important;
-        margin: 0 auto !important;
-        display: block !important;
-    }
-    [data-testid="stFileUploaderDropzone"] button:hover {
-        background-color: var(--orange-light) !important;
-    }
-
-    /* TEXTES GÉNÉRAUX SUR FOND SOMBRE */
-    p, li {
-        font-size: 1.2rem !important;
-        line-height: 1.6 !important;
-    }
-
     .capacity-bright {
         background: linear-gradient(135deg, #fffbeb 0%, #fff7ed 100%) !important;
         border: 4px solid #fbbf24 !important;
         padding: 40px !important;
         border-radius: 20px !important;
         color: #92400e !important;
-        font-size: 2rem !important; 
+        font-size: 1.5rem !important; 
         font-weight: 900 !important;
         text-align: center;
     }
 
-    /* FOOTER */
     .footer-wrapper {
-        width: 100vw; position: relative; left: 50%; right: 50%;
-        margin-left: -50vw; margin-right: -50vw;
-        background-color: var(--navy); border-top: 8px solid var(--orange-light);
-        margin-top: 80px; padding: 60px 0;
-    }
-    .footer-content { max-width: 1200px; margin: 0 auto; text-align: center; color: white; }
-
-    /* Custom Navbar Fallback Styles */
-    .nav-fallback {
-        background-color: var(--navy);
-        padding: 15px;
-        border-radius: 12px;
-        display: flex;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 15px;
-        margin-bottom: 40px;
-        border-bottom: 4px solid var(--orange-light);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        width: 100%; background-color: var(--navy); border-top: 8px solid var(--orange-light);
+        margin-top: 80px; padding: 60px 0; text-align: center;
     }
     
-    div[data-testid="stButton"]:has(button:contains("INTEGRITY_TRIGGER")) {
-        display: none !important;
+    .nav-fallback {
+        background-color: var(--navy); padding: 15px; border-radius: 12px;
+        display: flex; justify-content: center; gap: 15px; margin-bottom: 40px;
+        border-bottom: 4px solid var(--orange-light);
     }
     </style>
 """, unsafe_allow_html=True)
 
 # --- 4. INITIALISATION FIREBASE ---
+db = None
+PROJET_ID = "examen-asr-prod-final"
+
 if not firebase_admin._apps:
     try:
         if os.path.exists("serviceAccountKey.json"):
             cred = credentials.Certificate("serviceAccountKey.json")
             firebase_admin.initialize_app(cred)
-        else:
-            try:
-                firebase_secrets = json.loads(st.secrets["FIREBASE_JSON"])
-                cred = credentials.Certificate(firebase_secrets)
-                firebase_admin.initialize_app(cred)
-            except:
-                pass 
-    except Exception as e:
-        pass
-
-db = firestore.client()
-PROJET_ID = "examen-asr-prod"
+        elif "FIREBASE_JSON" in st.secrets:
+            cred = credentials.Certificate(json.loads(st.secrets["FIREBASE_JSON"]))
+            firebase_admin.initialize_app(cred)
+    except Exception: pass
+try: db = firestore.client()
+except: pass
 
 # --- 5. INITIALISATION SESSION STATE ---
 def init_session():
-    keys = ['user', 'page', 'step', 'answers', 'codes', 'durations', 'ex_start_time', 'cheats', 'exam_open']
+    keys = ['user', 'page', 'step', 'answers', 'codes', 'durations', 'ex_start_time', 'cheats', 
+            'exam_open_normal', 'exam_open_rattrapage', 'current_exam_mode', 'consult_data']
     for k in keys:
         if k not in st.session_state:
             if k in ['step', 'cheats']: st.session_state[k] = 0
             elif k in ['answers', 'codes', 'durations']: st.session_state[k] = {}
-            elif k == 'exam_open': st.session_state[k] = True
+            elif k.startswith('exam_open'): st.session_state[k] = False
             elif k == 'page': st.session_state[k] = '🏠 Accueil'
             else: st.session_state[k] = None
 
 init_session()
 
 def check_exam_status():
+    if not db: return
     try:
-        doc = db.collection('artifacts').document(PROJET_ID).collection('public').document('data').collection('settings').document('status').get()
+        doc = db.collection('artifacts').document(PROJET_ID).collection('public').document('data').collection('settings').document('config').get()
         if doc.exists:
-            st.session_state.exam_open = doc.to_dict().get('is_open', True)
+            d = doc.to_dict()
+            st.session_state.exam_open_normal = d.get('open_normal', False)
+            st.session_state.exam_open_rattrapage = d.get('open_rattrapage', False)
+        else:
+             db.collection('artifacts').document(PROJET_ID).collection('public').document('data').collection('settings').document('config').set({
+                 'open_normal': False, 'open_rattrapage': False
+             })
     except: pass
 
 check_exam_status()
 
-# BOUTON SÉCURITÉ (MASQUÉ)
-if st.button("INTEGRITY_TRIGGER", key="cheat_trigger"):
-    st.session_state.cheats += 1
+if st.button("INTEGRITY_TRIGGER", key="cheat_trigger"): st.session_state.cheats += 1
 
 # --- 6. CLASSES ET HELPERS ---
-class PDF(FPDF):
+def get_algeria_time_str(timestamp):
+    try:
+        if not timestamp: return "--:--"
+        if isinstance(timestamp, (datetime.datetime, datetime.date)):
+             utc_dt = timestamp
+        else:
+            ts = float(timestamp)
+            utc_dt = datetime.datetime.fromtimestamp(ts, datetime.timezone.utc)
+        alg_dt = utc_dt + datetime.timedelta(hours=1)
+        return alg_dt.strftime("%H:%M:%S")
+    except: return "--:--"
+
+def normalize_name(name): return str(name).strip().lower()
+
+class ReportPDF(FPDF):
     def header(self):
-        self.set_fill_color(0, 102, 51); self.rect(0, 0, 105, 10, 'F')
-        self.set_fill_color(255, 255, 255); self.rect(105, 0, 105, 10, 'F')
-        self.set_fill_color(204, 0, 0); self.ellipse(103, 3, 4, 4, 'F')
-        self.set_y(15); self.set_font('Arial', 'B', 8); self.set_text_color(0, 0, 0)
+        self.set_font('Arial', 'B', 10)
         self.cell(0, 5, "REPUBLIQUE ALGERIENNE DEMOCRATIQUE ET POPULAIRE", 0, 1, 'C')
-        self.cell(0, 5, "MINISTERE DE LA FORMATION ET DE L'ENSEIGNEMENT PROFESSIONNELS", 0, 1, 'C')
-        self.set_font('Arial', 'B', 7)
-        self.cell(0, 5, "Institut National Spécialisé de la Formation Professionnelle Belazzoug Athmane BBA 01", 0, 1, 'C')
-        self.ln(20)
-
+        self.cell(0, 5, "INSFP BELAZZOUG ATHMANE BBA 01", 0, 1, 'C'); self.ln(10)
+        self.set_fill_color(245, 124, 0); self.set_text_color(255, 255, 255)
+        self.set_font('Arial', 'B', 14)
+        self.cell(0, 12, "PV D'EXAMEN - ASR PRO", 1, 1, 'C', 1)
+        self.set_text_color(0, 0, 0); self.ln(5)
     def footer(self):
-        self.set_y(-20); self.set_font('Arial', 'B', 7); self.set_text_color(150, 150, 150)
-        self.cell(0, 10, "TOUS DROITS RÉSERVÉS © 2026 - INSFP BBA 01 - HAITHEM BERKANE", 0, 0, 'C')
+        self.set_y(-15); self.set_font('Arial', 'I', 8)
+        self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
 
-def get_col(name): return db.collection('artifacts').document(PROJET_ID).collection('public').document('data').collection(name)
+def generate_final_report_pdf(stats, results_df):
+    pdf = ReportPDF(); pdf.add_page()
+    pdf.set_font("Arial", "B", 12); pdf.cell(0, 10, "1. STATISTIQUES", 0, 1)
+    pdf.set_font("Arial", "", 11)
+    pdf.cell(90, 10, f"Copies: {stats['present']}", 1); pdf.cell(90, 10, f"Moyenne: {stats['moyenne']}/20", 1, 1)
+    pdf.ln(10); pdf.set_font("Arial", "B", 12); pdf.cell(0, 10, "2. LISTE", 0, 1)
+    pdf.set_fill_color(220, 220, 220); pdf.set_font("Arial", "B", 10)
+    pdf.cell(70, 10, "Nom", 1, 0, 'C', 1); pdf.cell(30, 10, "Note", 1, 0, 'C', 1); pdf.cell(40, 10, "Heure", 1, 1, 'C', 1)
+    pdf.set_font("Arial", "", 10)
+    for index, row in results_df.iterrows():
+        pdf.cell(70, 10, str(row['Nom']), 1)
+        pdf.cell(30, 10, str(row['Note']), 1, 0, 'C')
+        pdf.cell(40, 10, str(row['Heure']), 1, 1, 'C')
+    return pdf.output(dest='S').encode('latin-1')
+
+def get_col(name): 
+    if not db: return None
+    return db.collection('artifacts').document(PROJET_ID).collection('public').document('data').collection(name)
+
 def generate_pw(l=8): return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(l))
 
 def generate_pdf_credentials(users_list):
-    pdf = PDF(); pdf.add_page(); pdf.set_font("Arial", 'B', 11)
-    pdf.set_fill_color(245, 124, 0); pdf.set_text_color(255, 255, 255)
-    pdf.cell(75, 12, "Nom & Prenom", 1, 0, 'C', 1); pdf.cell(45, 12, "Identifiant", 1, 0, 'C', 1)
-    pdf.cell(35, 12, "Mot de Passe", 1, 0, 'C', 1); pdf.cell(35, 12, "Emargement", 1, 1, 'C', 1)
-    pdf.set_font("Arial", '', 11); pdf.set_text_color(0, 0, 0)
+    pdf = FPDF(); pdf.add_page(); pdf.set_font("Arial", 'B', 11)
+    pdf.cell(75, 12, "Nom", 1); pdf.cell(45, 12, "User", 1); pdf.cell(35, 12, "Pass", 1, 1)
+    pdf.set_font("Arial", '', 11)
     for u in users_list:
-        pdf.cell(75, 12, u.get('name'), 1); pdf.cell(45, 12, u.get('username'), 1)
-        pdf.cell(35, 12, u.get('password'), 1); pdf.cell(35, 12, "", 1, 1)
+        pdf.cell(75, 12, u.get('name'), 1); pdf.cell(45, 12, u.get('username'), 1); pdf.cell(35, 12, u.get('password'), 1, 1)
     return pdf.output(dest='S').encode('latin-1')
 
-# --- 7. DONNÉES EXAMEN ---
-EXERCICES = [
-    {"id": 1, "titre": "Algorithmique - Contrôle d'Accès", "points": 5, "enonce": "Écrivez un programme qui demande l'année de naissance de l'utilisateur.\n1. Calculez son âge (référence 2026).\n2. Si l'utilisateur a 18 ans ou plus: 'Accès autorisé', sinon 'Accès refusé'.", "questions": [{"id":"q1_1","text":"Âge pour naissance en 2010 ?", "type":"number", "correct":16}, {"id":"q1_2","text":"Message pour 16 ans ?", "type":"choice", "options":["Accès autorisé. Bienvenue !", "Accès refusé. Vous devez être majeur."], "correct":"Accès refusé. Vous devez être majeur."}]},
-    {"id": 2, "titre": "Physique - État de l'eau", "points": 5, "enonce": "Demandez la température T de l'eau (°C) :\n- T <= 0 : Glace\n- 0 < T < 100 : Liquide\n- T >= 100 : Vapeur", "questions": [{"id":"q2_1","text":"État à 100°C pile ?", "type":"choice", "options":["Glace", "Liquide", "Vapeur"], "correct":"Vapeur"}]},
-    {"id": 3, "titre": "Gestion - Assurance Auto", "points": 5, "enonce": "Tarif base 500€.\n- Si < 25 ans ET < 2 ans permis: +200€.\n- Si > 25 ans OU > 5 ans permis: -50€.", "questions": [{"id":"q3_1","text":"Conducteur de 22 ans, 1 an permis. Prix final ?", "type":"number", "correct":700}]},
-    {"id": 4, "titre": "Ingénierie Financière - Crédit", "points": 5, "enonce": "Vérifiez l'éligibilité :\n- Épargne <= 0 : Refus.\n- Taux endettement > 33% : Refus.\n- Sinon: Pré-approuvé.", "questions": [{"id":"q4_1","text":"Revenu 2000, Dépenses 2000. Décision ?", "type":"choice", "options":["Fonds insuffisants", "Taux > 33%"], "correct":"Fonds insuffisants"}]}
+def generate_pedagogical_insight(score):
+    if score < 5: return "🔴 **Niveau Critique** : Lacunes fondamentales. Reprise totale des bases nécessaire."
+    elif score < 10: return "🟠 **Niveau Insuffisant** : Concepts partiellement compris mais application défaillante."
+    elif score < 14: return "🟡 **Niveau Moyen** : L'essentiel est acquis, mais manque de rigueur ou de profondeur."
+    elif score < 18: return "🟢 **Bon Niveau** : Bonne maîtrise technique et théorique."
+    else: return "🔵 **Excellent** : Maîtrise parfaite du sujet."
+
+# --- 7. DONNÉES EXAMENS (NORMAL & RATTRAPAGE) ---
+EXAM_NORMAL = [
+    {"id": "n1", "titre": "Algorithmique - Contrôle d'Accès", "points": 5, "enonce": "Écrivez un programme qui demande l'année de naissance de l'utilisateur.\n1. Calculez son âge (référence 2026).\n2. Si l'utilisateur a 18 ans ou plus: Affichez 'Accès autorisé'.\n3. Sinon: Affichez 'Accès refusé'.", "questions": [{"id":"qn1_1","text":"Âge pour naissance en 2010 ?", "type":"number", "correct":16}, {"id":"qn1_2","text":"Message pour 16 ans ?", "type":"choice", "options":["Accès autorisé", "Accès refusé"], "correct":"Accès refusé"}]},
+    {"id": "n2", "titre": "Physique - État de l'eau", "points": 5, "enonce": "Demandez la température T de l'eau (°C) :\n- Si T <= 0 : Affichez 'Glace'\n- Si 0 < T < 100 : Affichez 'Liquide'\n- Si T >= 100 : Affichez 'Vapeur'", "questions": [{"id":"qn2_1","text":"État à 100°C pile ?", "type":"choice", "options":["Glace", "Liquide", "Vapeur"], "correct":"Vapeur"}]},
+    {"id": "n3", "titre": "Gestion - Assurance Auto", "points": 5, "enonce": "Tarif de base : 500€.\n- Si le conducteur a < 25 ans ET < 2 ans de permis : Ajouter 200€.\n- Si le conducteur a > 25 ans OU > 5 ans de permis : Retirer 50€.\nCalculez le tarif final.", "questions": [{"id":"qn3_1","text":"Conducteur 22 ans, 1 an permis. Prix final ?", "type":"number", "correct":700}]},
+    {"id": "n4", "titre": "Ingénierie - Crédit Bancaire", "points": 5, "enonce": "Vérifiez l'éligibilité au crédit :\n- Si Épargne <= 0 : Refus.\n- Si Taux d'endettement > 33% : Refus.\n- Sinon : Crédit Accepté.", "questions": [{"id":"qn4_1","text":"Revenu 2000, Dépenses 2000 (donc pas d'épargne). Décision ?", "type":"choice", "options":["Refus", "Crédit Accepté"], "correct":"Refus"}]}
 ]
 
-# --- 8. VUES ---
+EXAM_RATTRAPAGE = [
+    {"id": "r1", "titre": "Questions Théoriques", "points": 8, "mode_affichage": "qcm_only", "enonce": "Répondez aux questions sur Python.", "questions": [
+        {"id":"q1_1","text":"Q1. Type de `42` ?", "type":"choice", "options":["int", "float", "str", "bool"], "correct":"int"},
+        {"id":"q1_2","text":"Q2. Type de `\"42.5\"` ?", "type":"choice", "options":["int", "float", "str", "bool"], "correct":"str"},
+        {"id":"q1_3","text":"Q3. Type de `42.0` ?", "type":"choice", "options":["int", "float", "str", "bool"], "correct":"float"},
+        {"id":"q1_4","text":"Q4. Type de `10 > 5` ?", "type":"choice", "options":["int", "float", "str", "bool"], "correct":"bool"},
+        {"id":"q1_5","text":"Q5. Valeur de z ? (x=10, y=5, z=x+y, if x>15: z*2 else: z+10)", "type":"number", "correct":30, "code": "x=10\ny=5\nz=x+y\nif x>15: z=z*2\nelse: z=z+10\nprint(z)"}
+    ]},
+    {"id": "r2", "titre": "Calculateur Assurance Auto", "points": 12, "mode_affichage": "code_only", "enonce": "Programme 'AssurAuto'. Tarif base : 500€.\n- Jeune conducteur (<25 ans) : +100€.\n- Malus (Accident 'Oui') : +200€.\n- Bonus (>5 ans de permis) : -50€.\nCalculez le tarif final.", "questions": []}
+]
 
+EXAMS_DB = {"normal": EXAM_NORMAL, "rattrapage": EXAM_RATTRAPAGE}
+
+# --- 8. VUES ---
 def show_header():
     st.markdown("""
         <div class="official-header" style="text-align:center;">
@@ -355,289 +340,294 @@ def show_header():
     """, unsafe_allow_html=True)
 
 def show_footer():
-    st.markdown("""
-        <div class="footer-wrapper">
-            <div class="footer-content">
-                <div class="footer-hb" style="width:70px; height:70px; background:white; border:4px solid #f57c00; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#0047AB; font-weight:900; font-size:1.8rem; margin-bottom:20px; box-shadow:0 4px 15px rgba(0,0,0,0.3);">HB</div>
-                <h2 style="color:white !important; margin-bottom:15px; font-weight:900; letter-spacing:1px; font-size:1.8rem;">RÉALISÉ PAR HAITHEM BERKANE</h2>
-                <div style="font-size:1.4rem; font-weight:700; opacity:0.95; margin-bottom:10px;">Institut National Spécialisé Belazzoug Athmane BBA 01</div>
-                <p style="font-size:1.2rem; opacity:0.7; font-weight:400;">Ministère de la Formation et de l'Enseignement Professionnels 🇩🇿</p>
-                <div style="height:4px; background:#f57c00; width:200px; margin:35px auto; border-radius:10px;"></div>
-                <p style="font-size:1.2rem; opacity:0.7; font-weight:400;">République Algérienne Démocratique et Populaire 🇩🇿</p>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+    st.markdown("""<div class="footer-wrapper"><p style="color:white; opacity:0.8;">Réalisé par le Formateur : <strong>Haithem Berkane</strong></p></div>""", unsafe_allow_html=True)
 
 def audit_results_detailed(data):
-    st.markdown("### 🔍 Analyse Pédagogique des Résultats")
-    for ex in EXERCICES:
-        with st.expander(f"Exercice {ex['id']} : {ex['titre']}"):
+    e_type = data.get('exam_type', 'normal')
+    schema = EXAMS_DB.get(e_type, EXAM_NORMAL)
+    st.markdown(f"### 🔍 Analyse de la Copie ({e_type.upper()})")
+    
+    score = data.get('score', 0)
+    insight = generate_pedagogical_insight(score)
+    st.markdown(f"<div style='background:#f0f9ff; border:1px solid #bae6fd; color:#0369a1; padding:15px; border-radius:8px; margin-bottom:15px;'>{insight}</div>", unsafe_allow_html=True)
+    
+    # RECURSIVE KEYS SEARCH (POUR RÉCUPÉRER LES SOLUTIONS)
+    # Chercher dans answers ou reponses
+    saved_answers = data.get('answers') or data.get('reponses') or {}
+    # Chercher dans codes ou scripts
+    saved_codes = data.get('codes') or data.get('scripts') or {}
+    
+    def smart_get(d, key):
+        if not d: return None
+        # Cas 1: Match exact (qn1_1)
+        if key in d: return d[key]
+        # Cas 2: Match fuzzy (qn1_1 -> q1_1)
+        fuzzy_key = key.replace('qn', 'q')
+        if fuzzy_key in d: return d[fuzzy_key]
+        # Cas 3: Match numérique (qn1_1 -> 1_1)
+        num_key = fuzzy_key.replace('q', '')
+        if num_key in d: return d[num_key]
+        return None
+
+    for ex in schema:
+        with st.expander(f"Exercice : {ex['titre']}"):
             col_q, col_c = st.columns([1, 1.5])
             with col_q:
-                st.markdown("#### ✅ Validation Théorique")
-                for q in ex['questions']:
-                    user_ans = data.get('answers', {}).get(q['id'], "Non répondu")
-                    is_correct = str(user_ans) == str(q['correct'])
-                    color = "#10b981" if is_correct else "#ef4444"
-                    # ALERTE BLANCHE ET AGRANDIE
-                    st.markdown(f"""
-                        <div style="padding:15px; border-radius:8px; border-left:6px solid {color}; margin-bottom:15px; background:rgba(255,255,255,0.05);">
-                            <small style="color:#ddd; font-size:1.1rem; font-weight:bold;">{q['text']}</small><br>
-                            <span style="color:white; font-weight:900; font-size:1.4rem;">Saisi : {user_ans}</span><br>
-                            <small style="color:#ddd; font-size:1.1rem;">Attendu : {q['correct']}</small>
-                        </div>
-                    """, unsafe_allow_html=True)
+                if ex.get('mode_affichage') != 'code_only':
+                    for q in ex['questions']:
+                        val = smart_get(saved_answers, q['id'])
+                        if val is None: val = "Donnée non trouvée"
+                        is_correct = str(val) == str(q['correct'])
+                        color = "#10b981" if is_correct else "#ef4444"
+                        st.markdown(f"<div style='padding:10px; border-left:5px solid {color}; margin-bottom:10px; background:rgba(255,255,255,0.05);'><small>{q['text']}</small><br><b>Saisi : {val}</b><br><small style='color:gray;'>Correct : {q['correct']}</small></div>", unsafe_allow_html=True)
             with col_c:
-                st.markdown("#### 💻 Script Python Implémenté")
-                code = data.get('codes', {}).get(str(ex['id']), "")
-                cpm = data.get('cpm_data', {}).get(str(ex['id']), 0)
-                if cpm > 300: st.error(f"🚩 Alerte Plagiat / IA probable ({int(cpm)} CPM)")
-                else: st.info(f"🟢 Saisie normale ({int(cpm)} CPM)")
-                st.code(code, "python")
+                if ex.get('mode_affichage') != 'qcm_only':
+                    code_id = str(ex['id'])
+                    code = smart_get(saved_codes, code_id)
+                    if not code:
+                        # Test index numérique pur (n1 -> 1)
+                        clean_id = code_id.strip('nr')
+                        code = smart_get(saved_codes, clean_id)
+                    
+                    if code: st.code(code, "python")
+                    else: st.warning("Solution code manquante ou non soumise.")
 
-# --- CACHING DES DONNÉES POUR FLUIDITÉ ---
-@st.cache_data(ttl=60) # Rafraîchissement auto toutes les 60s
+@st.cache_data(ttl=60)
 def fetch_dashboard_data():
+    if not db: return [], []
     u_docs = get_col('users').where('role', '==', 'student').get()
     r_docs = get_col('results').get()
-    # On ajoute l'ID dans le dictionnaire pour éviter d'utiliser r_docs plus tard
     return [{"id": u.id, **u.to_dict()} for u in u_docs], [{"id": r.id, **r.to_dict()} for r in r_docs]
 
 def teacher_dash():
-    # Chargement optimisé des données
     u_list, r_list = fetch_dashboard_data()
-    
-    # Bouton de rafraîchissement manuel pour les données temps réel
-    if st.button("🔄 Actualiser les données"):
-        fetch_dashboard_data.clear()
-        st.rerun()
-
-    t1, t2, t3 = st.tabs(["📊 ANALYSE STATISTIQUE", "👥 GESTION SECTION", "📑 AUDIT DES COPIES"])
+    if st.button("🔄 Actualiser les données"): fetch_dashboard_data.clear(); st.rerun()
+    t1, t2, t3, t4 = st.tabs(["📊 STATISTIQUES", "👥 GESTION ÉTUDIANTS", "📑 AUDIT DES COPIES", "📦 MIGRATION JSON"])
     
     with t1:
-        st.markdown("### 🔒 Contrôle Administratif")
-        cl1, cl2 = st.columns([2, 1])
-        cl1.info(f"État actuel : **{'OUVERT' if st.session_state.exam_open else 'FERMÉ'}**")
-        if cl2.button("BASCULER ÉTAT SESSION"):
-            ns = not st.session_state.exam_open
-            try: db.collection('artifacts').document(PROJET_ID).collection('public').document('data').collection('settings').document('status').update({'is_open': ns})
-            except: pass
-            st.session_state.exam_open = ns; st.rerun()
-            
-        st.divider(); col_m = st.columns(4)
-        col_m[0].metric("Inscrits", len(u_list)); col_m[1].metric("Présents", len(r_list))
-        col_m[2].metric("Absents", max(0, len(u_list) - len(r_list)))
-        col_m[3].metric("Moyenne", f"{pd.DataFrame(r_list)['score'].mean():.2f}" if r_list else "0.00")
+        st.markdown("### 🔒 État des Sessions")
+        c1, c2 = st.columns(2)
+        with c1:
+            st.info(f"NORMAL : {'🟢 OUVERT' if st.session_state.exam_open_normal else '🔴 FERMÉ'}")
+            if st.button("BASCULER NORMAL"):
+                ns = not st.session_state.exam_open_normal
+                if db: get_col('settings').document('config').set({'open_normal': ns}, merge=True)
+                st.session_state.exam_open_normal = ns; st.rerun()
+        with c2:
+            st.info(f"RATTRAPAGE : {'🟢 OUVERT' if st.session_state.exam_open_rattrapage else '🔴 FERMÉ'}")
+            if st.button("BASCULER RATTRAPAGE"):
+                ns = not st.session_state.exam_open_rattrapage
+                if db: get_col('settings').document('config').set({'open_rattrapage': ns}, merge=True)
+                st.session_state.exam_open_rattrapage = ns; st.rerun()
         
-        if r_list:
-            df_s = pd.DataFrame(r_list); st.divider(); c_a = st.columns(3)
-            with c_a[0]: st.metric("Note Max", f"{df_s['score'].max()} / 20")
-            with c_a[1]: st.metric("Note Min", f"{df_s['score'].min()} / 20")
-            df_br = pd.DataFrame([r['breakdown'] for r in r_list]); best_id = df_br.mean().idxmax()
-            best_name = next(e['titre'] for e in EXERCICES if str(e['id']) == str(best_id))
-            with c_a[2]: st.metric("Meilleur Axe", f"Ex {best_id}")
-            st.markdown(f"""
-                <div class="capacity-bright">
-                    💡 ANALYSE DE CAPACITÉ MÉTIER<br>
-                    <span style="font-size:1.6rem; opacity:0.8;">L'exercice <b>'{best_name}'</b> présente le meilleur taux de maîtrise.</span>
-                </div>
-            """, unsafe_allow_html=True)
-            
+        st.divider()
+        stat_view = st.radio("Filtre d'analyse :", ["Global", "Session Normale", "Session Rattrapage"], horizontal=True)
+        
+        filtered_r = r_list
+        if stat_view == "Session Normale": filtered_r = [r for r in r_list if r.get('exam_type') == 'normal' or 'exam_type' not in r]
+        elif stat_view == "Session Rattrapage": filtered_r = [r for r in r_list if r.get('exam_type') == 'rattrapage']
+        
+        # CALCULS STATS SANS DOUBLONS
+        unique_users = set(r.get('username') for r in filtered_r)
+        inscrits = len(u_list)
+        presents_uniques = len(unique_users)
+        absents = max(0, inscrits - presents_uniques)
+        moyenne = pd.DataFrame(filtered_r)['score'].mean() if filtered_r else 0
+        
+        # AFFICHAGE 4 COLONNES PLEINES
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("Inscrits", inscrits)
+        m2.metric("Présents (Indiv.)", presents_uniques)
+        m3.metric("Absents", absents)
+        m4.metric("Moyenne /20", f"{moyenne:.2f}")
+        
+        if len(filtered_r) > presents_uniques:
+            st.warning(f"⚠️ Note : {len(filtered_r) - presents_uniques} copies multiples détectées. Les stats individuelles sont préservées.")
+
     with t2:
         c_i1, c_i2 = st.columns(2)
         with c_i1:
-            out_ex = io.BytesIO(); pd.DataFrame(columns=["Nom Complet"]).to_excel(out_ex, index=False)
-            st.download_button("📂 MODÈLE EXCEL", out_ex.getvalue(), "modele.xlsx")
-            
-            # FILE UPLOADER CUSTOMISÉ
-            up_f = st.file_uploader("Importer fichier Excel à charger", type=['xlsx'], label_visibility="visible")
-            
+            up_f = st.file_uploader("Importer Liste (Excel)", type=['xlsx'])
             if up_f and st.button("LANCER IMPORTATION"):
                 df = pd.read_excel(up_f)
                 for name in df.iloc[:, 0].dropna():
-                    uid = name.lower().replace(" ", ".") + str(random.randint(10,99))
-                    get_col('users').add({"name": name, "username": uid, "password": generate_pw(), "role": "student"})
-                # Invalider le cache pour voir les nouveaux étudiants
-                fetch_dashboard_data.clear()
-                st.rerun()
+                    uid = str(name).strip().lower().replace(" ", ".") + str(random.randint(10,99))
+                    if db: get_col('users').add({"name": str(name).strip(), "username": uid, "password": generate_pw(), "role": "student"})
+                fetch_dashboard_data.clear(); st.rerun()
         with c_i2:
-            if u_list: st.download_button("📥 GÉNÉRER FICHES ACCÈS (PDF)", generate_pdf_credentials(u_list), "Acces_ASR.pdf")
-            st.dataframe(pd.DataFrame(u_list)[['name', 'username', 'password']], use_container_width=True)
-            
-    with t3:
-        if r_list:
-            # FIX: On utilise r_list qui contient déjà 'id'
-            df_res = pd.DataFrame([{"ID": r['id'], "Nom": r['name'], "Note": r['score'], "Alertes": r.get('cheats',0)} for r in r_list])
-            sel = st.dataframe(df_res.drop(columns=["ID"]), use_container_width=True, on_select="rerun", selection_mode="single-row")
-            if sel and sel.selection.rows:
-                # FIX: Récupérer les données via l'index dans r_list
-                idx = sel.selection.rows[0]
-                data = r_list[idx]
-                doc_id = data['id']
+            if u_list: st.download_button("Télécharger Convocation (PDF)", generate_pdf_credentials(u_list), "Acces_ASR.pdf")
+            st.dataframe(pd.DataFrame(u_list)[['name', 'username', 'password']], use_container_width=True, hide_index=True)
 
-                st.markdown(f'<div class="white-card"><h2>COPIE : {data["name"]}</h2><h1>{data["score"]} / 20</h1></div>', unsafe_allow_html=True)
-                new_s = st.number_input("Ajuster Note :", 0.0, 20.0, float(data['score']), 0.25)
-                if st.button("SAUVEGARDER"):
-                    get_col('results').document(doc_id).update({"score": new_s}); st.success("Mis à jour !"); time.sleep(1); 
-                    fetch_dashboard_data.clear(); st.rerun()
-                st.divider(); audit_results_detailed(data)
+    with t3:
+        st.markdown("### 📑 Grille de Progression Interactive")
+        full_data = []
+        for u in u_list:
+            u_copies = [r for r in r_list if r['username'] == u['username']]
+            rn = next((r for r in u_copies if r.get('exam_type') == 'normal' or 'exam_type' not in r), None)
+            rr = next((r for r in u_copies if r.get('exam_type') == 'rattrapage'), None)
+            sn = rn['score'] if rn else 0
+            sr = rr['score'] if rr else 0
+            full_data.append({
+                "Username": u['username'], 
+                "Nom Complet": u['name'], 
+                "Note Normale": sn, 
+                "Note Rattrapage": sr if rr else "-", 
+                "Note Finale": max(sn, sr),
+                "Statut": "ADMIS ✅" if max(sn, sr) >= 10 else "AJOURNÉ ❌"
+            })
+        
+        df_grid = pd.DataFrame(full_data)
+        event = st.dataframe(df_grid, use_container_width=True, on_select="rerun", selection_mode="single-row", hide_index=True)
+        
+        if event.selection.rows:
+            sel_idx = event.selection.rows[0]
+            sel_user = df_grid.iloc[sel_idx]["Username"]
+            u_copies = [r for r in r_list if r['username'] == sel_user]
+            rn = next((r for r in u_copies if r.get('exam_type') == 'normal' or 'exam_type' not in r), None)
+            rr = next((r for r in u_copies if r.get('exam_type') == 'rattrapage'), None)
+            
+            st.divider()
+            st.subheader(f"Détails : {df_grid.iloc[sel_idx]['Nom Complet']}")
+            ca, cb = st.columns(2)
+            with ca: 
+                if rn: audit_results_detailed(rn)
+                else: st.warning("Aucune copie pour la session normale.")
+            with cb:
+                if rr: audit_results_detailed(rr)
+                else: st.warning("Aucune copie pour la session rattrapage.")
+
+    with t4:
+        st.markdown("### 📦 Sauvegarde et Migration")
+        if st.button("EXTRAIRE TOUTES LES COPIES (JSON)"):
+            clean = []
+            for r in r_list:
+                item = dict(r)
+                if isinstance(item.get('timestamp'), (datetime.datetime, datetime.date)):
+                     item['timestamp'] = item['timestamp'].timestamp()
+                clean.append(item)
+            st.download_button("TÉLÉCHARGER JSON", json.dumps(clean, indent=2, default=str), f"backup_asr_{datetime.date.today()}.json", "application/json")
+        
+        st.divider()
+        up_j = st.file_uploader("Charger un JSON pour restauration", type=['json'])
+        if up_j and st.button("RESTAURER MAINTENANT"):
+            data = json.load(up_j)
+            count = 0
+            for item in data:
+                if db: 
+                    get_col('results').add(item)
+                    count += 1
+            st.success(f"Restauration terminée : {count} copies ajoutées !"); time.sleep(1); st.rerun()
 
 def exam_view():
-    if not st.session_state.exam_open: show_header(); st.error("🔒 Session verrouillée."); show_footer(); return
-    show_header(); step = st.session_state.step; ex = EXERCICES[step]; st.progress((step + 1) / 4); st.info(ex['enonce'])
-    st.session_state.codes[ex['id']] = st.text_area("Console Python (Logiciel 4/5) :", height=380, key=f"c_{ex['id']}")
-    st.markdown("---"); st.markdown(f"#### **QUESTION :** {ex['questions'][0]['text']}")
-    for q in ex['questions']:
-        if q['type'] == 'choice': st.session_state.answers[q['id']] = st.radio(q['text'], q['options'], key=f"ans_{q['id']}", label_visibility="hidden")
-        else: st.session_state.answers[q['id']] = st.number_input(q['text'], key=f"ans_{q['id']}", value=0)
-    
-    if st.button("SUIVANT ➡️" if step < 3 else "🎯 RENDRE LA COPIE"):
-        st.session_state.durations[ex['id']] = round(time.time() - st.session_state.ex_start_time, 1)
-        if step < 3: st.session_state.step += 1; st.session_state.ex_start_time = time.time(); st.rerun()
-        else:
-            total, br, cpm_d = 0, {}, {}
-            for e in EXERCICES:
-                pts_q = sum(1.0/len(e['questions']) for q in e['questions'] if str(st.session_state.answers.get(q['id'])) == str(q['correct']))
-                code_val = st.session_state.codes.get(e['id'], "").strip(); pts_c = 4.0 if len(code_val) > 15 else 0
-                dur = st.session_state.durations.get(e['id'], 1); cpm = (len(code_val) / (dur/60)) if dur > 0 else 0
-                cpm_d[str(e['id'])] = cpm; ex_s = pts_q + pts_c
-                if cpm > 300: ex_s = max(0, ex_s - 1.5)
-                br[str(e['id'])] = round(ex_s, 2); total += ex_s
-            fs = max(0, total - (st.session_state.cheats * 3))
-            get_col('results').add({"username": str(st.session_state.user['username']), "name": str(st.session_state.user['name']), "score": round(fs, 1), "breakdown": br, "answers": st.session_state.answers, "durations": {str(k):v for k,v in st.session_state.durations.items()}, "codes": {str(k):v for k,v in st.session_state.codes.items()}, "cpm_data": cpm_d, "timestamp": time.time(), "cheats": st.session_state.cheats})
-            st.session_state.page = "👤 Espace Candidat"; st.rerun()
+    mode = st.session_state.current_exam_mode
+    data_exam = EXAMS_DB.get(mode, EXAM_NORMAL)
+    show_header(); st.markdown(f"### EXAMEN : {mode.upper()}")
+    step = st.session_state.step
+    if step >= len(data_exam):
+        total, br = 0, {}
+        for e in data_exam:
+            pts = 0
+            if e['questions']:
+                w = e['points'] * (0.4 if e.get('mode_affichage')!='qcm_only' else 1.0)
+                good = sum(1 for q in e['questions'] if str(st.session_state.answers.get(q['id'])) == str(q['correct']))
+                pts += (good/len(e['questions'])) * w
+            if e.get('mode_affichage') != 'qcm_only':
+                w = e['points'] * (0.6 if e['questions'] else 1.0)
+                if len(st.session_state.codes.get(e['id'], "").strip()) > 10: pts += w
+            br[str(e['id'])] = round(pts, 2); total += pts
+        if db:
+            get_col('results').add({
+                "username": st.session_state.user['username'], "name": st.session_state.user['name'],
+                "score": round(total, 2), "breakdown": br, "exam_type": mode, 
+                "answers": st.session_state.answers, "codes": st.session_state.codes, "timestamp": time.time()
+            })
+        st.session_state.page = "👤 Espace Candidat"; st.rerun()
+        return
 
-def login_view():
-    show_header()
-    # PAS DE WHITE-CARD ICI. Juste le titre en blanc pour aller sur le fond sombre.
-    st.markdown('<div style="max-width:500px; margin:auto;">', unsafe_allow_html=True)
-    st.markdown('<h2 style="text-align:center; margin-bottom:30px; font-weight:900; color:white;">Authentification Sécurisée</h2>', unsafe_allow_html=True)
-    u = st.text_input("Identifiant ARS")
-    p = st.text_input("Mot de passe", type="password")
-    if st.button("ACCÉDER À LA SESSION"):
-        if u == "admin" and p == "admin": st.session_state.user = {"name": "Administrateur", "role": "teacher", "username": "admin"}; st.session_state.page = "📊 Tableau de Bord"; st.rerun()
-        try:
-            docs = get_col('users').where('username', '==', u).where('password', '==', p).get()
-            if docs: st.session_state.user = docs[0].to_dict(); st.session_state.page = "👤 Espace Candidat"; st.rerun()
-            else: st.error("Identifiants incorrects.")
-        except: st.error("Erreur de connexion. Vérifiez la configuration.")
-    st.markdown('</div>', unsafe_allow_html=True); show_footer()
+    ex = data_exam[step]; st.progress((step + 1) / len(data_exam))
+    st.markdown(f'<div class="white-card"><h3>{ex["titre"]}</h3><pre style="white-space:pre-wrap;">{ex["enonce"]}</pre></div>', unsafe_allow_html=True)
+    if ex.get('mode_affichage') != 'code_only':
+        for q in ex['questions']:
+            st.markdown(f"**{q['text']}**")
+            if 'code' in q: st.code(q['code'], 'python')
+            if q['type'] == 'choice': st.session_state.answers[q['id']] = st.radio("Réponse :", q['options'], key=f"ans_{q['id']}")
+            else: st.session_state.answers[q['id']] = st.number_input("Réponse :", key=f"ans_{q['id']}")
+    if ex.get('mode_affichage') != 'qcm_only':
+        st.session_state.codes[ex['id']] = st.text_area("Script Python :", height=250, key=f"c_{ex['id']}")
+    if st.button("ÉTAPE SUIVANTE" if step < len(data_exam)-1 else "SOUMETTRE LA COPIE"):
+        st.session_state.step += 1; st.rerun()
 
 def student_dash():
-    show_header(); u = st.session_state.user; st.markdown(f"<h1>Session : {u['name']}</h1>", unsafe_allow_html=True)
-    res_docs = get_col('results').where('username', '==', u['username']).get()
-    if res_docs: 
-        res = res_docs[0].to_dict(); st.success(f"### NOTE OBTENUE : {res['score']} / 20")
-        st.divider(); audit_results_detailed(res)
-    elif st.session_state.exam_open:
-        if st.button("🚀 DÉMARRER L'ÉPREUVE"): st.session_state.page = "exam"; st.session_state.ex_start_time = time.time(); st.rerun()
-    else: st.warning("🔒 L'examen est verrouillé."); show_footer()
+    show_header(); u = st.session_state.user; st.markdown(f"<h2>Bonjour, {u['name']}</h2>", unsafe_allow_html=True)
+    my_res = []
+    if db: my_res = [r.to_dict() for r in get_col('results').where('username', '==', u['username']).get()]
+    rn = next((r for r in my_res if r.get('exam_type')=='normal' or 'exam_type' not in r), None)
+    rr = next((r for r in my_res if r.get('exam_type')=='rattrapage'), None)
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown('<div class="white-card"><h3>📅 SESSION NORMALE</h3>', unsafe_allow_html=True)
+        if rn: st.success(f"Score : {rn['score']}/20")
+        elif st.session_state.exam_open_normal:
+            if st.button("LANCER L'ÉPREUVE NORMALE"): st.session_state.current_exam_mode="normal"; st.session_state.page="exam"; st.session_state.step=0; st.rerun()
+        else: st.warning("Session actuellement fermée.")
+        st.markdown('</div>', unsafe_allow_html=True)
+    with c2:
+        st.markdown('<div class="white-card"><h3>🚑 SESSION RATTRAPAGE</h3>', unsafe_allow_html=True)
+        if rr: st.success(f"Score : {rr['score']}/20")
+        elif st.session_state.exam_open_rattrapage:
+             if st.button("LANCER LE RATTRAPAGE"): st.session_state.current_exam_mode="rattrapage"; st.session_state.page="exam"; st.session_state.step=0; st.rerun()
+        else: st.warning("Session actuellement fermée.")
+        st.markdown('</div>', unsafe_allow_html=True)
+    show_footer()
 
-def accueil_view():
-    show_header()
-    # WHITE-CARD conservée ici
-    st.markdown("""
-        <div class="white-card">
-            <h1 style="font-weight:900; margin-bottom:20px;">Portail Académique ASR</h1>
-            <p style="font-size:1.4rem; line-height:1.6; color:#444;">
-                Bienvenue sur l'infrastructure d'évaluation certifiée de l'Institut National Spécialisé Belazzoug Athmane.<br><br>
-                Veuillez utiliser le menu de navigation ci-dessus pour vous identifier et accéder à votre terminal d'examen.
-            </p>
-        </div>
-    """, unsafe_allow_html=True); show_footer()
+def login_view():
+    show_header(); u = st.text_input("Identifiant"); p = st.text_input("Mot de passe", type="password")
+    if st.button("SE CONNECTER"):
+        if u == "admin" and p == "admin": st.session_state.user = {"name": "Formateur", "role": "teacher", "username": "admin"}; st.session_state.page = "📊 STATISTIQUES"; st.rerun()
+        if db:
+            docs = get_col('users').where('username', '==', u).where('password', '==', p).get()
+            if docs: st.session_state.user = docs[0].to_dict(); st.session_state.page = "👤 Espace Candidat"; st.rerun()
 
 def enonce_view():
     show_header()
-    # WHITE-CARD conservée ici
-    st.markdown('<div class="white-card"><h2>Énoncés & Modalités</h2><p>Le barème favorise l\'implémentation (4/5) et la théorie (1/5).</p></div>', unsafe_allow_html=True)
-    for ex in EXERCICES:
-        st.markdown(f"""
-            <div class="white-card" style="margin-top:20px;">
-                <h3 style="color:#c2410c;">Exercice {ex['id']} : {ex['titre']} ({ex['points']} pts)</h3>
-                <pre style="background:#f1f5f9; padding:15px; border-radius:8px; font-family:monospace; color:#333; white-space:pre-wrap;">{ex['enonce']}</pre>
-            </div>
-        """, unsafe_allow_html=True)
-    show_footer()
+    for t, d in EXAMS_DB.items():
+        st.markdown(f"## {t.upper()}")
+        for ex in d:
+            with st.expander(ex['titre']): st.markdown(f"```text\n{ex['enonce']}\n```")
 
 def faq_view():
+    show_header(); st.markdown("<div class='white-card'><h2>Aide technique</h2><p>Contactez le surveillant en cas de déconnexion.</p></div>", unsafe_allow_html=True)
+
+def accueil_view():
     show_header()
-    # WHITE-CARD conservée ici
     st.markdown("""
         <div class="white-card">
-            <h2>FAQ - Foire Aux Questions</h2>
-            <ul>
-                <li><strong>Durée de l'examen :</strong> 2 heures.</li>
-                <li><strong>Système anti-triche :</strong> La perte de focus (changement d'onglet) est détectée et sanctionnée (-3 points).</li>
-                <li><strong>Sauvegarde :</strong> Automatique à chaque étape.</li>
-                <li><strong>Problème technique :</strong> Signalez-le immédiatement au surveillant.</li>
-            </ul>
+            <h1>Bienvenue sur ASR Pro</h1>
+            <p>Plateforme sécurisée d'évaluation pour l'INSFP Belazzoug Athmane.</p>
+            <p>Veuillez vous authentifier pour accéder à votre espace personnel.</p>
         </div>
     """, unsafe_allow_html=True)
     show_footer()
 
-# --- 9. ROUTAGE AVEC ST_NAVBAR (OU FALLBACK) ---
-
-# Définition des pages avec Émojis
+# --- 9. ROUTAGE ---
 pages = ["🏠 Accueil", "📜 Énoncés", "❓ FAQ"]
-if st.session_state.user:
-    if st.session_state.user.get('role') == 'teacher':
-        pages.append("📊 Tableau de Bord")
-    else:
-        pages.append("👤 Espace Candidat")
-    pages.append("🚪 Déconnexion")
-else:
-    pages.append("🔐 Connexion")
+if st.session_state.user: pages += ["📊 STATISTIQUES"] if st.session_state.user['role'] == 'teacher' else ["👤 Espace Candidat"]; pages += ["🚪 Déconnexion"]
+else: pages += ["🔐 Connexion"]
 
-# Tentative d'utilisation de streamlit-navigation-bar
-try:
-    from streamlit_navigation_bar import st_navbar
-    
-    styles = {
-        "nav": {"background-color": "#112240", "justify-content": "center"},
-        "img": {"padding-right": "14px"},
-        "span": {"color": "white", "padding": "14px"},
-        "active": {"background-color": "#f57c00", "color": "white", "font-weight": "bold", "padding": "14px"}
-    }
-    options = {"show_menu": False, "show_sidebar": False}
-    
-    selected_page = st_navbar(pages, styles=styles, options=options)
+st.markdown('<div class="nav-fallback">', unsafe_allow_html=True)
+cols = st.columns(len(pages))
+for i, p_name in enumerate(pages):
+    if cols[i].button(p_name, use_container_width=True):
+        if "Déconnexion" in p_name: st.session_state.user=None; st.session_state.page="🏠 Accueil"
+        else: st.session_state.page = p_name
+        st.rerun()
+st.markdown('</div>', unsafe_allow_html=True)
 
-except ImportError:
-    # Fallback CSS
-    st.markdown('<div class="nav-fallback">', unsafe_allow_html=True)
-    cols = st.columns(len(pages))
-    selected_page = st.session_state.page
-    
-    for i, p_name in enumerate(pages):
-        with cols[i]:
-            if st.button(p_name, key=f"nav_{p_name}", use_container_width=True):
-                selected_page = p_name
-    st.markdown('</div>', unsafe_allow_html=True)
-
-# Gestion de la sélection
-if selected_page == "🚪 Déconnexion":
-    st.session_state.user = None
-    st.session_state.page = "🏠 Accueil"
-    st.rerun()
-elif selected_page != st.session_state.page:
-    st.session_state.page = selected_page
-    st.rerun()
-
-# Affichage de la page active
 p = st.session_state.page
-
-if p == '📊 Tableau de Bord' and st.session_state.user and st.session_state.user['role'] == 'teacher':
-    teacher_dash()
-elif p == 'exam':
-    exam_view()
-elif p == '👤 Espace Candidat' and st.session_state.user:
-    student_dash()
-elif p == '🔐 Connexion':
-    login_view()
-elif p == '📜 Énoncés':
-    enonce_view()
-elif p == '❓ FAQ':
-    faq_view()
-else:
-    # Page par défaut
-    accueil_view()
+if p == '📊 STATISTIQUES': teacher_dash()
+elif p == 'exam': exam_view()
+elif p == '👤 Espace Candidat': student_dash()
+elif p == '🔐 Connexion': login_view()
+elif p == '📜 Énoncés': enonce_view()
+elif p == '❓ FAQ': faq_view()
+else: accueil_view()
