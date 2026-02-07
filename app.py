@@ -14,7 +14,7 @@ from fpdf import FPDF
 
 # --- 1. CONFIGURATION DE LA PAGE ---
 st.set_page_config(
-    page_title="ASR Pro - Excellence Pédagogique",
+    page_title="ASR Pro - Excellence Pédagogique (LEGACY)",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="collapsed"
@@ -563,7 +563,7 @@ def teacher_dash():
                     time.sleep(1); st.rerun()
                 except Exception as e: st.error(f"Erreur: {e}")
 
-            # --- NOUVEAU : BOUTON SUPPRESSION DOUBLONS ---
+            # --- BOUTON SUPPRESSION DOUBLONS ---
             st.divider()
             if st.button("🧹 NETTOYER DOUBLONS (Nom)"):
                 with st.spinner("Nettoyage en cours..."):
@@ -574,7 +574,6 @@ def teacher_dash():
                         data = doc.to_dict()
                         name_norm = normalize_name(data.get('name', ''))
                         if name_norm in seen_names:
-                            # C'est un doublon, on supprime
                             doc.reference.delete()
                             deleted_count += 1
                         else:
@@ -589,6 +588,36 @@ def teacher_dash():
             if u_list: st.download_button("📥 GÉNÉRER FICHES ACCÈS (PDF)", generate_pdf_credentials(u_list), "Acces_ASR.pdf")
             st.dataframe(pd.DataFrame(u_list)[['name', 'username', 'password']], use_container_width=True)
             
+        # --- BLOC AJOUTÉ POUR MIGRATION (EXPORT JSON) ---
+        st.markdown("---")
+        st.markdown('<div class="white-card">', unsafe_allow_html=True)
+        st.subheader("📦 MIGRATION VERS NOUVELLE VERSION")
+        st.info("Utilisez ce bouton pour extraire les données de cette ancienne version et les importer dans la nouvelle interface 'ASR Pro V2' (Onglet Admin > Migration).")
+        
+        if st.button("GÉNÉRER FICHIER JSON (TOUT EXPORTER)"):
+            try:
+                # Récupération de tous les résultats
+                all_res_docs = get_col('results').stream()
+                export_list = []
+                for doc in all_res_docs:
+                    d = doc.to_dict()
+                    # Nettoyage pour JSON serializable
+                    d['id'] = doc.id
+                    if 'timestamp' in d: d['timestamp'] = float(d['timestamp'])
+                    export_list.append(d)
+                
+                json_export = json.dumps(export_list, indent=2, default=str)
+                st.download_button(
+                    label="💾 TÉLÉCHARGER backup_legacy.json",
+                    data=json_export,
+                    file_name="backup_legacy.json",
+                    mime="application/json"
+                )
+                st.success(f"✅ {len(export_list)} copies prêtes à l'export !")
+            except Exception as e:
+                st.error(f"Erreur export : {str(e)}")
+        st.markdown('</div>', unsafe_allow_html=True)
+
     with t3:
         if r_list:
             # Création du DataFrame avec heure algérienne
