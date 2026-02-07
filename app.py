@@ -647,19 +647,41 @@ def enonce_view():
 def faq_view():
     show_header(); st.markdown('<div class="white-card"><h2>FAQ</h2><ul><li>Durée: 2h</li><li>Anti-triche actif</li></ul></div>', unsafe_allow_html=True); show_footer()
 
-# --- 9. ROUTAGE ---
+# --- 9. ROUTAGE AVEC NAVIGATION ---
 pages = ["🏠 Accueil", "📜 Énoncés", "❓ FAQ"]
 if st.session_state.user:
-    pages.append("📊 Tableau de Bord" if st.session_state.user['role'] == 'teacher' else "👤 Espace Candidat")
+    if st.session_state.user.get('role') == 'teacher':
+        pages.append("📊 Tableau de Bord")
+    else:
+        pages.append("👤 Espace Candidat")
     pages.append("🚪 Déconnexion")
-else: pages.append("🔐 Connexion")
+else:
+    pages.append("🔐 Connexion")
 
-cols = st.columns(len(pages))
-for i, pg in enumerate(pages):
-    if cols[i].button(pg): 
-        if pg == "🚪 Déconnexion": st.session_state.user = None; st.session_state.page = "🏠 Accueil"
-        else: st.session_state.page = pg
-        st.rerun()
+try:
+    from streamlit_navigation_bar import st_navbar
+    styles = {
+        "nav": {"background-color": "#112240", "justify-content": "center"},
+        "span": {"color": "white", "padding": "14px"},
+        "active": {"background-color": "#f57c00", "color": "white", "font-weight": "bold", "padding": "14px"}
+    }
+    selected_page = st_navbar(pages, styles=styles, options={"show_menu": False, "show_sidebar": False})
+except ImportError:
+    st.markdown('<div class="nav-fallback">', unsafe_allow_html=True)
+    cols = st.columns(len(pages))
+    selected_page = st.session_state.page
+    for i, p_name in enumerate(pages):
+        if cols[i].button(p_name, key=f"nav_{p_name}", use_container_width=True):
+            selected_page = p_name
+    st.markdown('</div>', unsafe_allow_html=True)
+
+if selected_page == "🚪 Déconnexion":
+    st.session_state.user = None
+    st.session_state.page = "🏠 Accueil"
+    st.rerun()
+elif selected_page != st.session_state.page:
+    st.session_state.page = selected_page
+    st.rerun()
 
 p = st.session_state.page
 if p == '📊 Tableau de Bord' and st.session_state.user and st.session_state.user['role'] == 'teacher': teacher_dash()
