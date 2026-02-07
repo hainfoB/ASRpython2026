@@ -9,76 +9,50 @@ import random
 import string
 import io
 import json
-import base64
 from fpdf import FPDF
 
 # --- 1. CONFIGURATION DE LA PAGE ---
 st.set_page_config(
-    page_title="ASR Pro - Excellence Pédagogique (LEGACY)",
+    page_title="ASR Pro - Excellence Pédagogique",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. SÉCURITÉ & PROTECTION (CORRECTIF ANTI-TRICHE & MASQUAGE) ---
-
-# A. MASQUAGE CSS (Immédiat)
-st.markdown("""
-    <style>
-    /* Masquer le bouton spécifique qui contient le texte INTEGRITY_TRIGGER */
-    div[data-testid="stButton"]:has(button:contains("INTEGRITY_TRIGGER")) {
-        display: none !important;
-        visibility: hidden !important;
-        height: 0 !important;
-        width: 0 !important;
-        position: absolute !important;
-        left: -9999px !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# B. SCRIPT DE PROTECTION JS (Persistant)
+# --- 2. SÉCURITÉ & PROTECTION (OPTIMISÉE) ---
 st.components.v1.html("""
     <script>
     document.addEventListener('contextmenu', event => event.preventDefault());
     document.addEventListener('copy', e => e.preventDefault());
     document.addEventListener('paste', e => e.preventDefault());
     
-    function hideTriggerButton() {
+    function killSecurityButton() {
         const buttons = window.parent.document.querySelectorAll('button');
-        for (const btn of buttons) {
+        buttons.forEach(btn => {
             if (btn.innerText.includes('INTEGRITY_TRIGGER')) {
                 const container = btn.closest('div[data-testid="stButton"]');
                 if (container) {
-                    container.style.display = 'none';
-                    container.style.visibility = 'hidden';
                     container.style.position = 'absolute';
+                    container.style.left = '-9999px';
+                    container.style.top = '-9999px';
+                    container.style.visibility = 'hidden';
                 }
             }
-        }
+        });
     }
 
-    function triggerCheat() {
+    window.addEventListener('blur', function() {
         const buttons = window.parent.document.querySelectorAll('button');
-        for (const btn of buttons) {
+        for (let btn of buttons) {
             if (btn.innerText.includes('INTEGRITY_TRIGGER')) {
                 btn.click();
                 break;
             }
         }
-    }
-
-    setInterval(hideTriggerButton, 50);
-
-    document.addEventListener('visibilitychange', function() {
-        if (document.hidden) {
-            triggerCheat();
-        }
     });
 
-    window.addEventListener('blur', function() {
-        triggerCheat();
-    });
+    // Fréquence réduite pour améliorer la fluidité (1000ms au lieu de 400ms)
+    setInterval(killSecurityButton, 1000);
     </script>
 """, height=0)
 
@@ -102,8 +76,10 @@ st.markdown("""
         font-family: 'Inter', sans-serif;
     }
 
+    /* Suppression de la sidebar native */
     [data-testid="stSidebar"] { display: none; }
     
+    /* BOUTONS GLOBAUX (ORANGE FONCÉ, TEXTE BLANC) */
     .stButton > button, [data-testid="stFormSubmitButton"] > button, .stDownloadButton > button {
         background-color: var(--orange-dark) !important;
         color: white !important;
@@ -123,6 +99,7 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(245, 124, 0, 0.4) !important;
     }
 
+    /* HEADER & TEXTES */
     .hb-logo {
         width: 90px; height: 90px; background: white;
         border: 6px solid var(--orange-light); border-radius: 50%;
@@ -131,6 +108,7 @@ st.markdown("""
         box-shadow: 0 0 25px rgba(245, 124, 0, 0.6);
     }
 
+    /* LABELS DES WIDGETS (Input, Select...) - BLANCS ET GRANDS */
     [data-testid="stWidgetLabel"] p, label {
         color: #ffffff !important;
         font-size: 1.5rem !important;
@@ -138,11 +116,13 @@ st.markdown("""
         margin-bottom: 10px !important;
     }
     
+    /* Input text color fix */
     .stTextInput input {
         color: #333 !important;
         font-weight: bold;
     }
 
+    /* CARTES CONTENU (BLANCHES) */
     .white-card, .report-card {
         background-color: var(--white) !important;
         padding: 40px !important;
@@ -159,6 +139,7 @@ st.markdown("""
         color: var(--orange-dark) !important;
     }
     
+    /* --- DESIGN SPÉCIFIQUE STATISTIQUES (KPI) --- */
     [data-testid="stMetric"] {
         background-color: var(--white) !important;
         padding: 30px 10px !important;
@@ -174,6 +155,7 @@ st.markdown("""
         height: 100% !important;
     }
     
+    /* TITRE DE LA STATISTIQUE -> BLEU NUIT */
     [data-testid="stMetricLabel"] {
         width: 100% !important;
         justify-content: center !important;
@@ -186,18 +168,22 @@ st.markdown("""
         letter-spacing: 1px !important;
     }
 
+    /* CHIFFRE DE LA STATISTIQUE -> ORANGE FONCÉ & XXL */
     [data-testid="stMetricValue"] div {
         color: var(--orange-dark) !important;
-        font-size: 5rem !important;
+        font-size: 5rem !important; /* Agrandissement Max */
         font-weight: 900 !important;
         line-height: 1.1 !important;
         margin-top: 15px !important;
     }
     
+    /* --- DESIGN FILE UPLOADER (CUSTOM) --- */
+    /* Masquer le texte par défaut (Drag & Drop, Limit...) */
     [data-testid="stFileUploaderDropzoneInstructions"], [data-testid="stFileUploaderDropzone"] div small {
         display: none !important;
     }
     
+    /* Styliser le conteneur pour qu'il soit propre */
     [data-testid="stFileUploaderDropzone"] {
         border: 2px dashed var(--orange-dark) !important;
         background-color: rgba(255,255,255,0.05) !important;
@@ -207,6 +193,7 @@ st.markdown("""
         justify-content: center !important;
     }
     
+    /* Cibler le bouton "Browse files" à l'intérieur */
     [data-testid="stFileUploaderDropzone"] button {
         background-color: var(--orange-dark) !important;
         color: white !important;
@@ -223,6 +210,7 @@ st.markdown("""
         background-color: var(--orange-light) !important;
     }
 
+    /* TEXTES GÉNÉRAUX SUR FOND SOMBRE */
     p, li {
         font-size: 1.2rem !important;
         line-height: 1.6 !important;
@@ -239,6 +227,7 @@ st.markdown("""
         text-align: center;
     }
 
+    /* FOOTER */
     .footer-wrapper {
         width: 100vw; position: relative; left: 50%; right: 50%;
         margin-left: -50vw; margin-right: -50vw;
@@ -247,6 +236,7 @@ st.markdown("""
     }
     .footer-content { max-width: 1200px; margin: 0 auto; text-align: center; color: white; }
 
+    /* Custom Navbar Fallback Styles */
     .nav-fallback {
         background-color: var(--navy);
         padding: 15px;
@@ -258,6 +248,10 @@ st.markdown("""
         margin-bottom: 40px;
         border-bottom: 4px solid var(--orange-light);
         box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+    
+    div[data-testid="stButton"]:has(button:contains("INTEGRITY_TRIGGER")) {
+        display: none !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -273,8 +267,10 @@ if not firebase_admin._apps:
                 firebase_secrets = json.loads(st.secrets["FIREBASE_JSON"])
                 cred = credentials.Certificate(firebase_secrets)
                 firebase_admin.initialize_app(cred)
-            except: pass 
-    except Exception as e: pass
+            except:
+                pass 
+    except Exception as e:
+        pass
 
 db = firestore.client()
 PROJET_ID = "examen-asr-prod"
@@ -301,110 +297,32 @@ def check_exam_status():
 
 check_exam_status()
 
-# BOUTON SÉCURITÉ (CLIQUE PAR JS)
+# BOUTON SÉCURITÉ (MASQUÉ)
 if st.button("INTEGRITY_TRIGGER", key="cheat_trigger"):
     st.session_state.cheats += 1
 
 # --- 6. CLASSES ET HELPERS ---
-def get_algeria_time_str(timestamp):
-    """Convertit un timestamp en heure Algérie (UTC+1) de manière sécurisée"""
-    try:
-        if not timestamp: return "--:--"
-        ts = float(timestamp)
-        utc_dt = datetime.datetime.fromtimestamp(ts, datetime.timezone.utc)
-        alg_dt = utc_dt + datetime.timedelta(hours=1)
-        return alg_dt.strftime("%H:%M:%S")
-    except:
-        return "--:--"
-
-def normalize_name(name):
-    """Normalise un nom pour la comparaison"""
-    return str(name).strip().lower()
-
-class ReportPDF(FPDF):
+class PDF(FPDF):
     def header(self):
-        # En-tête officiel
-        self.set_font('Arial', 'B', 10)
+        self.set_fill_color(0, 102, 51); self.rect(0, 0, 105, 10, 'F')
+        self.set_fill_color(255, 255, 255); self.rect(105, 0, 105, 10, 'F')
+        self.set_fill_color(204, 0, 0); self.ellipse(103, 3, 4, 4, 'F')
+        self.set_y(15); self.set_font('Arial', 'B', 8); self.set_text_color(0, 0, 0)
         self.cell(0, 5, "REPUBLIQUE ALGERIENNE DEMOCRATIQUE ET POPULAIRE", 0, 1, 'C')
         self.cell(0, 5, "MINISTERE DE LA FORMATION ET DE L'ENSEIGNEMENT PROFESSIONNELS", 0, 1, 'C')
-        self.set_font('Arial', 'B', 9)
-        self.cell(0, 5, "INSFP BELAZZOUG ATHMANE BBA 01", 0, 1, 'C')
-        self.ln(10)
-        
-        # Titre
-        self.set_fill_color(245, 124, 0) # Orange Pro
-        self.set_text_color(255, 255, 255)
-        self.set_font('Arial', 'B', 14)
-        self.cell(0, 12, "PROCES VERBAL D'EXAMEN - ASR PRO", 1, 1, 'C', 1)
-        self.set_text_color(0, 0, 0)
-        self.ln(5)
-        
-        # Date
-        self.set_font('Arial', 'I', 10)
-        now = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
-        self.cell(0, 10, f"Genere le : {now.strftime('%d/%m/%Y à %H:%M')}", 0, 1, 'R')
-        self.ln(5)
+        self.set_font('Arial', 'B', 7)
+        self.cell(0, 5, "Institut National Spécialisé de la Formation Professionnelle Belazzoug Athmane BBA 01", 0, 1, 'C')
+        self.ln(20)
 
     def footer(self):
-        self.set_y(-15)
-        self.set_font('Arial', 'I', 8)
-        self.cell(0, 10, f'Page {self.page_no()}', 0, 0, 'C')
-
-def generate_final_report_pdf(stats, results_df):
-    pdf = ReportPDF()
-    pdf.add_page()
-    
-    # 1. Stats
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(0, 10, "1. STATISTIQUES DE LA SESSION", 0, 1)
-    pdf.set_font("Arial", "", 11)
-    pdf.cell(90, 10, f"Presents (Indiv.): {stats['present']}", 1)
-    pdf.cell(90, 10, f"Moyenne de Section: {stats['moyenne']}/20", 1, 1)
-    pdf.cell(90, 10, f"Meilleure Note: {stats['max']}/20", 1)
-    pdf.cell(90, 10, f"Note Minimale: {stats['min']}/20", 1, 1)
-    pdf.ln(10)
-
-    # 2. Tableau
-    pdf.set_font("Arial", "B", 12)
-    pdf.cell(0, 10, "2. LISTE DETAILLEE (Copies uniques retenues)", 0, 1)
-    
-    # Header
-    pdf.set_fill_color(220, 220, 220)
-    pdf.set_font("Arial", "B", 10)
-    pdf.cell(70, 10, "Nom & Prenom", 1, 0, 'C', 1)
-    pdf.cell(30, 10, "Note /20", 1, 0, 'C', 1)
-    pdf.cell(40, 10, "Heure Remise", 1, 0, 'C', 1)
-    pdf.cell(50, 10, "Observations", 1, 1, 'C', 1)
-    
-    pdf.set_font("Arial", "", 10)
-    for index, row in results_df.iterrows():
-        pdf.cell(70, 10, str(row['Nom']), 1)
-        try:
-            if float(row['Note']) < 10: pdf.set_text_color(200, 0, 0)
-        except: pass
-        pdf.cell(30, 10, str(row['Note']), 1, 0, 'C')
-        pdf.set_text_color(0, 0, 0)
-        pdf.cell(40, 10, str(row['Heure']), 1, 0, 'C')
-        
-        obs = "RAS"
-        try:
-            if int(row['Alertes']) > 0:
-                obs = f"ALERTE ({int(row['Alertes'])})"
-                pdf.set_text_color(255, 0, 0)
-                pdf.set_font("Arial", "B", 10)
-        except: pass
-        pdf.cell(50, 10, obs, 1, 1, 'C')
-        pdf.set_text_color(0, 0, 0)
-        pdf.set_font("Arial", "", 10)
-
-    return pdf.output(dest='S').encode('latin-1')
+        self.set_y(-20); self.set_font('Arial', 'B', 7); self.set_text_color(150, 150, 150)
+        self.cell(0, 10, "TOUS DROITS RÉSERVÉS © 2026 - INSFP BBA 01 - HAITHEM BERKANE", 0, 0, 'C')
 
 def get_col(name): return db.collection('artifacts').document(PROJET_ID).collection('public').document('data').collection(name)
 def generate_pw(l=8): return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(l))
 
 def generate_pdf_credentials(users_list):
-    pdf = FPDF()
-    pdf.add_page(); pdf.set_font("Arial", 'B', 11)
+    pdf = PDF(); pdf.add_page(); pdf.set_font("Arial", 'B', 11)
     pdf.set_fill_color(245, 124, 0); pdf.set_text_color(255, 255, 255)
     pdf.cell(75, 12, "Nom & Prenom", 1, 0, 'C', 1); pdf.cell(45, 12, "Identifiant", 1, 0, 'C', 1)
     pdf.cell(35, 12, "Mot de Passe", 1, 0, 'C', 1); pdf.cell(35, 12, "Emargement", 1, 1, 'C', 1)
@@ -414,7 +332,7 @@ def generate_pdf_credentials(users_list):
         pdf.cell(35, 12, u.get('password'), 1); pdf.cell(35, 12, "", 1, 1)
     return pdf.output(dest='S').encode('latin-1')
 
-# --- 7. DONNÉES EXAMEN (HARDCODED) ---
+# --- 7. DONNÉES EXAMEN ---
 EXERCICES = [
     {"id": 1, "titre": "Algorithmique - Contrôle d'Accès", "points": 5, "enonce": "Écrivez un programme qui demande l'année de naissance de l'utilisateur.\n1. Calculez son âge (référence 2026).\n2. Si l'utilisateur a 18 ans ou plus: 'Accès autorisé', sinon 'Accès refusé'.", "questions": [{"id":"q1_1","text":"Âge pour naissance en 2010 ?", "type":"number", "correct":16}, {"id":"q1_2","text":"Message pour 16 ans ?", "type":"choice", "options":["Accès autorisé. Bienvenue !", "Accès refusé. Vous devez être majeur."], "correct":"Accès refusé. Vous devez être majeur."}]},
     {"id": 2, "titre": "Physique - État de l'eau", "points": 5, "enonce": "Demandez la température T de l'eau (°C) :\n- T <= 0 : Glace\n- 0 < T < 100 : Liquide\n- T >= 100 : Vapeur", "questions": [{"id":"q2_1","text":"État à 100°C pile ?", "type":"choice", "options":["Glace", "Liquide", "Vapeur"], "correct":"Vapeur"}]},
@@ -461,6 +379,7 @@ def audit_results_detailed(data):
                     user_ans = data.get('answers', {}).get(q['id'], "Non répondu")
                     is_correct = str(user_ans) == str(q['correct'])
                     color = "#10b981" if is_correct else "#ef4444"
+                    # ALERTE BLANCHE ET AGRANDIE
                     st.markdown(f"""
                         <div style="padding:15px; border-radius:8px; border-left:6px solid {color}; margin-bottom:15px; background:rgba(255,255,255,0.05);">
                             <small style="color:#ddd; font-size:1.1rem; font-weight:bold;">{q['text']}</small><br>
@@ -476,41 +395,24 @@ def audit_results_detailed(data):
                 else: st.info(f"🟢 Saisie normale ({int(cpm)} CPM)")
                 st.code(code, "python")
 
-@st.cache_data(ttl=60)
+# --- CACHING DES DONNÉES POUR FLUIDITÉ ---
+@st.cache_data(ttl=60) # Rafraîchissement auto toutes les 60s
 def fetch_dashboard_data():
     u_docs = get_col('users').where('role', '==', 'student').get()
     r_docs = get_col('results').get()
+    # On ajoute l'ID dans le dictionnaire pour éviter d'utiliser r_docs plus tard
     return [{"id": u.id, **u.to_dict()} for u in u_docs], [{"id": r.id, **r.to_dict()} for r in r_docs]
 
 def teacher_dash():
-    u_list, r_all_raw = fetch_dashboard_data()
+    # Chargement optimisé des données
+    u_list, r_list = fetch_dashboard_data()
     
-    # 1. NETTOYAGE ET DÉDOUBLONNAGE (CONSERVER UNIQUEMENT LA DERNIÈRE COPIE PAR ÉTUDIANT)
-    processed_results = {}
-    for r in r_all_raw:
-        # Nettoyage timestamp
-        if 'timestamp' not in r or r['timestamp'] is None:
-            ts = 0.0
-        else:
-            try: ts = float(r['timestamp'])
-            except: ts = 0.0
-        r['timestamp'] = ts
-        
-        # Logique de conservation : on garde la copie si elle est plus récente pour cet username
-        uname = r.get('username', 'unknown')
-        if uname not in processed_results or ts > processed_results[uname]['timestamp']:
-            processed_results[uname] = r
-
-    # Liste finale des résultats sans doublons
-    r_list = list(processed_results.values())
-    # Tri par ordre chronologique pour le PV
-    r_list.sort(key=lambda x: x['timestamp'])
-
+    # Bouton de rafraîchissement manuel pour les données temps réel
     if st.button("🔄 Actualiser les données"):
         fetch_dashboard_data.clear()
         st.rerun()
 
-    t1, t2, t3, t4 = st.tabs(["📊 ANALYSE STATISTIQUE", "👥 GESTION SECTION", "📑 AUDIT DES COPIES", "📦 EXPORT / MIGRATION"])
+    t1, t2, t3 = st.tabs(["📊 ANALYSE STATISTIQUE", "👥 GESTION SECTION", "📑 AUDIT DES COPIES"])
     
     with t1:
         st.markdown("### 🔒 Contrôle Administratif")
@@ -523,10 +425,7 @@ def teacher_dash():
             st.session_state.exam_open = ns; st.rerun()
             
         st.divider(); col_m = st.columns(4)
-        col_m[0].metric("Inscrits", len(u_list))
-        
-        # Stats basées sur les copies uniques
-        col_m[1].metric("Présents (Indiv.)", len(r_list))
+        col_m[0].metric("Inscrits", len(u_list)); col_m[1].metric("Présents", len(r_list))
         col_m[2].metric("Absents", max(0, len(u_list) - len(r_list)))
         col_m[3].metric("Moyenne", f"{pd.DataFrame(r_list)['score'].mean():.2f}" if r_list else "0.00")
         
@@ -550,83 +449,38 @@ def teacher_dash():
             out_ex = io.BytesIO(); pd.DataFrame(columns=["Nom Complet"]).to_excel(out_ex, index=False)
             st.download_button("📂 MODÈLE EXCEL", out_ex.getvalue(), "modele.xlsx")
             
+            # FILE UPLOADER CUSTOMISÉ
             up_f = st.file_uploader("Importer fichier Excel à charger", type=['xlsx'], label_visibility="visible")
             
             if up_f and st.button("LANCER IMPORTATION"):
-                try:
-                    df = pd.read_excel(up_f)
-                    existing_names = {normalize_name(u['name']) for u in u_list}
-                    count_added = 0
-                    for name in df.iloc[:, 0].dropna():
-                        clean_name = str(name).strip()
-                        if normalize_name(clean_name) not in existing_names:
-                            uid = clean_name.lower().replace(" ", ".") + str(random.randint(10,99))
-                            get_col('users').add({"name": clean_name, "username": uid, "password": generate_pw(), "role": "student"})
-                            existing_names.add(normalize_name(clean_name))
-                            count_added += 1
-                    fetch_dashboard_data.clear()
-                    if count_added > 0: st.success(f"{count_added} étudiants ajoutés.")
-                    else: st.warning("Aucun nouvel étudiant (doublons détectés).")
-                    time.sleep(1); st.rerun()
-                except Exception as e: st.error(f"Erreur: {e}")
-
-            st.divider()
-            if st.button("🧹 NETTOYER DOUBLONS (Inscriptions)"):
-                with st.spinner("Nettoyage en cours..."):
-                    all_users = get_col('users').stream()
-                    seen_names = set(); deleted_count = 0
-                    for doc in all_users:
-                        data = doc.to_dict(); name_norm = normalize_name(data.get('name', ''))
-                        if name_norm in seen_names: doc.reference.delete(); deleted_count += 1
-                        else: seen_names.add(name_norm)
-                    fetch_dashboard_data.clear()
-                    st.success(f"{deleted_count} inscriptions en doublon supprimées.")
-                    time.sleep(1); st.rerun()
-
+                df = pd.read_excel(up_f)
+                for name in df.iloc[:, 0].dropna():
+                    uid = name.lower().replace(" ", ".") + str(random.randint(10,99))
+                    get_col('users').add({"name": name, "username": uid, "password": generate_pw(), "role": "student"})
+                # Invalider le cache pour voir les nouveaux étudiants
+                fetch_dashboard_data.clear()
+                st.rerun()
         with c_i2:
             if u_list: st.download_button("📥 GÉNÉRER FICHES ACCÈS (PDF)", generate_pdf_credentials(u_list), "Acces_ASR.pdf")
             st.dataframe(pd.DataFrame(u_list)[['name', 'username', 'password']], use_container_width=True)
-
+            
     with t3:
         if r_list:
-            # Préparation des données uniques pour l'affichage et le PDF
-            data_for_df = []
-            for r in r_list:
-                data_for_df.append({
-                    "ID": r['id'],
-                    "Nom": r['name'],
-                    "Note": r['score'],
-                    "Alertes": r.get('cheats', 0),
-                    "Heure": get_algeria_time_str(r['timestamp']),
-                    "timestamp": r['timestamp']
-                })
-            df_res = pd.DataFrame(data_for_df)
-
-            # PDF OFFICIEL SANS RÉPÉTITIONS
-            stats = {"present": len(r_list), "moyenne": f"{df_res['Note'].mean():.2f}", "max": df_res['Note'].max(), "min": df_res['Note'].min()}
-            pdf_data = generate_final_report_pdf(stats, df_res)
-            st.download_button("📄 TÉLÉCHARGER PV OFFICIEL SANS DOUBLONS (PDF)", pdf_data, "PV_Examen_Unique.pdf", mime="application/pdf")
-
-            st.markdown("### Liste des copies (Derniers envois par étudiant)")
-            sel = st.dataframe(df_res.drop(columns=["ID", "timestamp"]), use_container_width=True, on_select="rerun", selection_mode="single-row")
+            # FIX: On utilise r_list qui contient déjà 'id'
+            df_res = pd.DataFrame([{"ID": r['id'], "Nom": r['name'], "Note": r['score'], "Alertes": r.get('cheats',0)} for r in r_list])
+            sel = st.dataframe(df_res.drop(columns=["ID"]), use_container_width=True, on_select="rerun", selection_mode="single-row")
             if sel and sel.selection.rows:
-                idx = sel.selection.rows[0]; doc_id = df_res.iloc[idx]['ID']
-                data = next(r for r in r_list if r['id'] == doc_id)
+                # FIX: Récupérer les données via l'index dans r_list
+                idx = sel.selection.rows[0]
+                data = r_list[idx]
+                doc_id = data['id']
+
                 st.markdown(f'<div class="white-card"><h2>COPIE : {data["name"]}</h2><h1>{data["score"]} / 20</h1></div>', unsafe_allow_html=True)
                 new_s = st.number_input("Ajuster Note :", 0.0, 20.0, float(data['score']), 0.25)
                 if st.button("SAUVEGARDER"):
                     get_col('results').document(doc_id).update({"score": new_s}); st.success("Mis à jour !"); time.sleep(1); 
                     fetch_dashboard_data.clear(); st.rerun()
                 st.divider(); audit_results_detailed(data)
-                
-    with t4:
-        st.markdown("### 📦 MIGRATION ET BACKUP")
-        if st.button("GÉNÉRER LE JSON COMPLET"):
-            try:
-                data_export = [doc.to_dict() for doc in get_col('results').stream()]
-                json_str = json.dumps(data_export, indent=2, default=str)
-                st.download_button("📥 TÉLÉCHARGER JSON", json_str, "backup_results.json", "application/json")
-            except Exception as e: st.error(f"Erreur export: {e}")
 
 def exam_view():
     if not st.session_state.exam_open: show_header(); st.error("🔒 Session verrouillée."); show_footer(); return
@@ -655,6 +509,7 @@ def exam_view():
 
 def login_view():
     show_header()
+    # PAS DE WHITE-CARD ICI. Juste le titre en blanc pour aller sur le fond sombre.
     st.markdown('<div style="max-width:500px; margin:auto;">', unsafe_allow_html=True)
     st.markdown('<h2 style="text-align:center; margin-bottom:30px; font-weight:900; color:white;">Authentification Sécurisée</h2>', unsafe_allow_html=True)
     u = st.text_input("Identifiant ARS")
@@ -680,6 +535,7 @@ def student_dash():
 
 def accueil_view():
     show_header()
+    # WHITE-CARD conservée ici
     st.markdown("""
         <div class="white-card">
             <h1 style="font-weight:900; margin-bottom:20px;">Portail Académique ASR</h1>
@@ -692,6 +548,7 @@ def accueil_view():
 
 def enonce_view():
     show_header()
+    # WHITE-CARD conservée ici
     st.markdown('<div class="white-card"><h2>Énoncés & Modalités</h2><p>Le barème favorise l\'implémentation (4/5) et la théorie (1/5).</p></div>', unsafe_allow_html=True)
     for ex in EXERCICES:
         st.markdown(f"""
@@ -704,6 +561,7 @@ def enonce_view():
 
 def faq_view():
     show_header()
+    # WHITE-CARD conservée ici
     st.markdown("""
         <div class="white-card">
             <h2>FAQ - Foire Aux Questions</h2>
@@ -717,7 +575,9 @@ def faq_view():
     """, unsafe_allow_html=True)
     show_footer()
 
-# --- 9. ROUTAGE AVEC NAVIGATION ---
+# --- 9. ROUTAGE AVEC ST_NAVBAR (OU FALLBACK) ---
+
+# Définition des pages avec Émojis
 pages = ["🏠 Accueil", "📜 Énoncés", "❓ FAQ"]
 if st.session_state.user:
     if st.session_state.user.get('role') == 'teacher':
@@ -728,23 +588,33 @@ if st.session_state.user:
 else:
     pages.append("🔐 Connexion")
 
+# Tentative d'utilisation de streamlit-navigation-bar
 try:
     from streamlit_navigation_bar import st_navbar
+    
     styles = {
         "nav": {"background-color": "#112240", "justify-content": "center"},
+        "img": {"padding-right": "14px"},
         "span": {"color": "white", "padding": "14px"},
         "active": {"background-color": "#f57c00", "color": "white", "font-weight": "bold", "padding": "14px"}
     }
-    selected_page = st_navbar(pages, styles=styles, options={"show_menu": False, "show_sidebar": False})
+    options = {"show_menu": False, "show_sidebar": False}
+    
+    selected_page = st_navbar(pages, styles=styles, options=options)
+
 except ImportError:
+    # Fallback CSS
     st.markdown('<div class="nav-fallback">', unsafe_allow_html=True)
     cols = st.columns(len(pages))
     selected_page = st.session_state.page
+    
     for i, p_name in enumerate(pages):
-        if cols[i].button(p_name, key=f"nav_{p_name}", use_container_width=True):
-            selected_page = p_name
+        with cols[i]:
+            if st.button(p_name, key=f"nav_{p_name}", use_container_width=True):
+                selected_page = p_name
     st.markdown('</div>', unsafe_allow_html=True)
 
+# Gestion de la sélection
 if selected_page == "🚪 Déconnexion":
     st.session_state.user = None
     st.session_state.page = "🏠 Accueil"
@@ -753,11 +623,21 @@ elif selected_page != st.session_state.page:
     st.session_state.page = selected_page
     st.rerun()
 
+# Affichage de la page active
 p = st.session_state.page
-if p == '📊 Tableau de Bord' and st.session_state.user and st.session_state.user['role'] == 'teacher': teacher_dash()
-elif p == 'exam': exam_view()
-elif p == '👤 Espace Candidat' and st.session_state.user: student_dash()
-elif p == '🔐 Connexion': login_view()
-elif p == '📜 Énoncés': enonce_view()
-elif p == '❓ FAQ': faq_view()
-else: accueil_view()
+
+if p == '📊 Tableau de Bord' and st.session_state.user and st.session_state.user['role'] == 'teacher':
+    teacher_dash()
+elif p == 'exam':
+    exam_view()
+elif p == '👤 Espace Candidat' and st.session_state.user:
+    student_dash()
+elif p == '🔐 Connexion':
+    login_view()
+elif p == '📜 Énoncés':
+    enonce_view()
+elif p == '❓ FAQ':
+    faq_view()
+else:
+    # Page par défaut
+    accueil_view()
