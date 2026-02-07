@@ -502,7 +502,7 @@ def teacher_dash():
         fetch_dashboard_data.clear()
         st.rerun()
 
-    t1, t2, t3 = st.tabs(["📊 ANALYSE STATISTIQUE", "👥 GESTION SECTION", "📑 AUDIT DES COPIES"])
+    t1, t2, t3, t4 = st.tabs(["📊 ANALYSE STATISTIQUE", "👥 GESTION SECTION", "📑 AUDIT DES COPIES", "📦 EXPORT / MIGRATION"])
     
     with t1:
         st.markdown("### 🔒 Contrôle Administratif")
@@ -587,47 +587,6 @@ def teacher_dash():
         with c_i2:
             if u_list: st.download_button("📥 GÉNÉRER FICHES ACCÈS (PDF)", generate_pdf_credentials(u_list), "Acces_ASR.pdf")
             st.dataframe(pd.DataFrame(u_list)[['name', 'username', 'password']], use_container_width=True)
-            
-        # --- BLOC AJOUTÉ POUR MIGRATION (EXPORT JSON) ---
-        st.markdown("---")
-        st.markdown('<div class="white-card">', unsafe_allow_html=True)
-        st.subheader("📦 MIGRATION VERS NOUVELLE VERSION")
-        st.info("Utilisez ce bouton pour extraire les données de cette ancienne version et les importer dans la nouvelle interface 'ASR Pro V2' (Onglet Admin > Migration).")
-        
-        if st.button("GÉNÉRER FICHIER JSON (TOUT EXPORTER)"):
-            try:
-                # Récupération de tous les résultats
-                all_res_docs = get_col('results').stream()
-                export_list = []
-                for doc in all_res_docs:
-                    d = doc.to_dict()
-                    # Nettoyage pour JSON serializable
-                    d['id'] = doc.id
-                    
-                    # Correction du timestamp (Gère float, string et datetime)
-                    if 'timestamp' in d: 
-                        ts = d['timestamp']
-                        try:
-                            if hasattr(ts, 'timestamp'): # Cas datetime
-                                d['timestamp'] = ts.timestamp()
-                            else:
-                                d['timestamp'] = float(ts)
-                        except:
-                            d['timestamp'] = 0.0
-
-                    export_list.append(d)
-                
-                json_export = json.dumps(export_list, indent=2, default=str)
-                st.download_button(
-                    label="💾 TÉLÉCHARGER backup_legacy.json",
-                    data=json_export,
-                    file_name="backup_legacy.json",
-                    mime="application/json"
-                )
-                st.success(f"✅ {len(export_list)} copies prêtes à l'export !")
-            except Exception as e:
-                st.error(f"Erreur export : {str(e)}")
-        st.markdown('</div>', unsafe_allow_html=True)
 
     with t3:
         if r_list:
@@ -664,6 +623,67 @@ def teacher_dash():
                     get_col('results').document(doc_id).update({"score": new_s}); st.success("Mis à jour !"); time.sleep(1); 
                     fetch_dashboard_data.clear(); st.rerun()
                 st.divider(); audit_results_detailed(data)
+                
+    with t4:
+        st.markdown("### 📦 MIGRATION DE SECOURS (Extraction Totale)")
+        st.info("Ce bouton scanne toutes les sources possibles (Dossier Canvas + Racine Base de Données) pour récupérer même les données des anciennes versions manuelles.")
+        
+        if st.button("GÉNÉRER LE JSON COMPLET (TOUTES SOURCES)"):
+            try:
+                data_export = []
+                ids_seen = set()
+                sources_found = []
+
+                # 1. Source: Canvas Standard (Nested)
+                try:
+                    docs_nested = get_col('results').stream()
+                    count_nested = 0
+                    for doc in docs_nested:
+                        if doc.id not in ids_seen:
+                            d = doc.to_dict(); d['id'] = doc.id; d['_source'] = 'nested'
+                            data_export.append(d); ids_seen.add(doc.id)
+                            count_nested += 1
+                    if count_nested > 0: sources_found.append(f"Canvas ({count_nested})")
+                except: pass
+
+                # 2. Source: Root Collection 'results' (Legacy V1)
+                try:
+                    docs_root = db.collection('results').stream()
+                    count_root = 0
+                    for doc in docs_root:
+                        if doc.id not in ids_seen:
+                            d = doc.to_dict(); d['id'] = doc.id; d['_source'] = 'root'
+                            data_export.append(d); ids_seen.add(doc.id)
+                            count_root += 1
+                    if count_root > 0: sources_found.append(f"Racine DB ({count_root})")
+                except: pass
+
+                # 3. Processing (Date Fix & Cleanup)
+                count_details = 0
+                final_clean_data = []
+                for d in data_export:
+                    # Fix Timestamp
+                    ts_val = d.get('timestamp', 0.0)
+                    try: d['timestamp'] = float(ts_val)
+                    except (ValueError, TypeError):
+                        try: d['timestamp'] = ts_val.timestamp()
+                        except: d['timestamp'] = 0.0
+                    
+                    if d.get('answers') or d.get('codes'): count_details += 1
+                    final_clean_data.append(d)
+                
+                # Output
+                if not final_clean_data:
+                    st.error("❌ Aucune donnée trouvée (ni dans la collection standard, ni à la racine).")
+                else:
+                    json_str = json.dumps(final_clean_data, indent=2, default=str)
+                    st.success(f"✅ {len(final_clean_data)} copies récupérées. Sources: {', '.join(sources_found)}")
+                    if count_details == 0: st.warning("⚠️ Note : Aucune réponse détaillée (Uniquement les notes).")
+                    else: st.info(f"ℹ️ {count_details} copies contiennent le détail (Réponses/Code).")
+                    
+                    st.download_button("📥 TÉLÉCHARGER LE JSON GLOBAL", json_str, "backup_full_legacy.json", "application/json")
+                
+            except Exception as e: st.error(f"Erreur export: {e}")
 
 def exam_view():
     if not st.session_state.exam_open: show_header(); st.error("🔒 Session verrouillée."); show_footer(); return
