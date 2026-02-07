@@ -219,9 +219,6 @@ st.markdown("""
         margin: 0 auto !important;
         display: block !important;
     }
-    [data-testid="stFileUploaderDropzone"] button:hover {
-        background-color: var(--orange-light) !important;
-    }
 
     p, li {
         font-size: 1.2rem !important;
@@ -307,7 +304,6 @@ if st.button("INTEGRITY_TRIGGER", key="cheat_trigger"):
 
 # --- 6. CLASSES ET HELPERS ---
 def get_algeria_time_str(timestamp):
-    """Convertit un timestamp en heure Algérie (UTC+1) de manière sécurisée"""
     try:
         if not timestamp: return "--:--"
         ts = float(timestamp)
@@ -318,31 +314,37 @@ def get_algeria_time_str(timestamp):
         return "--:--"
 
 def normalize_name(name):
-    """Normalise un nom pour la comparaison"""
     return str(name).strip().lower()
 
 class ReportPDF(FPDF):
     def header(self):
-        # En-tête officiel
+        # Bande verte (Haut Gauche)
+        self.set_fill_color(0, 102, 51)
+        self.rect(10, 10, 85, 8, 'F')
+        # Point rouge
+        self.set_fill_color(211, 0, 0)
+        self.ellipse(92, 11, 5, 5, 'F')
+        self.ln(15)
+
+        # En-tête institutionnel
+        self.set_text_color(0, 0, 0)
         self.set_font('Arial', 'B', 10)
         self.cell(0, 5, "REPUBLIQUE ALGERIENNE DEMOCRATIQUE ET POPULAIRE", 0, 1, 'C')
         self.cell(0, 5, "MINISTERE DE LA FORMATION ET DE L'ENSEIGNEMENT PROFESSIONNELS", 0, 1, 'C')
-        self.set_font('Arial', 'B', 9)
-        self.cell(0, 5, "INSFP BELAZZOUG ATHMANE BBA 01", 0, 1, 'C')
-        self.ln(10)
+        self.set_font('Arial', '', 10)
+        self.cell(0, 5, "Institut National Spécialisé de la Formation Professionnelle Belazzoug Athmane BBA 01", 0, 1, 'C')
         
-        # Titre
-        self.set_fill_color(245, 124, 0) # Orange Pro
-        self.set_text_color(255, 255, 255)
-        self.set_font('Arial', 'B', 14)
-        self.cell(0, 12, "PROCES VERBAL D'EXAMEN - ASR PRO", 1, 1, 'C', 1)
-        self.set_text_color(0, 0, 0)
-        self.ln(5)
+        self.ln(15)
+        # Titre (Bleu comme l'image)
+        self.set_font('Arial', 'B', 22)
+        self.set_text_color(0, 82, 156) 
+        self.cell(0, 15, "PROCÈS VERBAL DE DÉLIBÉRATION", 0, 1, 'C', 0)
         
         # Date
-        self.set_font('Arial', 'I', 10)
+        self.set_text_color(0, 0, 0)
+        self.set_font('Arial', '', 11)
         now = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
-        self.cell(0, 10, f"Genere le : {now.strftime('%d/%m/%Y à %H:%M')}", 0, 1, 'R')
+        self.cell(0, 10, f"Généré le : {now.strftime('%d/%m/%Y %H:%M')}", 0, 1, 'C')
         self.ln(5)
 
     def footer(self):
@@ -360,15 +362,12 @@ def generate_final_report_pdf(stats, results_df):
     pdf.set_font("Arial", "", 11)
     pdf.cell(90, 10, f"Presents (Indiv.): {stats['present']}", 1)
     pdf.cell(90, 10, f"Moyenne de Section: {stats['moyenne']}/20", 1, 1)
-    pdf.cell(90, 10, f"Meilleure Note: {stats['max']}/20", 1)
-    pdf.cell(90, 10, f"Note Minimale: {stats['min']}/20", 1, 1)
     pdf.ln(10)
 
     # 2. Tableau
     pdf.set_font("Arial", "B", 12)
-    pdf.cell(0, 10, "2. LISTE DETAILLEE (Copies uniques retenues)", 0, 1)
+    pdf.cell(0, 10, "2. LISTE DES CANDIDATS ET NOTES", 0, 1)
     
-    # Header
     pdf.set_fill_color(220, 220, 220)
     pdf.set_font("Arial", "B", 10)
     pdf.cell(70, 10, "Nom & Prenom", 1, 0, 'C', 1)
@@ -378,26 +377,28 @@ def generate_final_report_pdf(stats, results_df):
     
     pdf.set_font("Arial", "", 10)
     for index, row in results_df.iterrows():
-        pdf.cell(70, 10, str(row['Nom']), 1)
-        try:
-            if float(row['Note']) < 10: pdf.set_text_color(200, 0, 0)
-        except: pass
+        name_clean = str(row['Nom']).encode('latin-1', 'replace').decode('latin-1')
+        pdf.cell(70, 10, name_clean, 1)
         pdf.cell(30, 10, str(row['Note']), 1, 0, 'C')
-        pdf.set_text_color(0, 0, 0)
         pdf.cell(40, 10, str(row['Heure']), 1, 0, 'C')
-        
         obs = "RAS"
-        try:
-            if int(row['Alertes']) > 0:
-                obs = f"ALERTE ({int(row['Alertes'])})"
-                pdf.set_text_color(255, 0, 0)
-                pdf.set_font("Arial", "B", 10)
-        except: pass
+        if int(row['Alertes']) > 0: obs = f"ALERTE FOCUS ({int(row['Alertes'])})"
         pdf.cell(50, 10, obs, 1, 1, 'C')
-        pdf.set_text_color(0, 0, 0)
-        pdf.set_font("Arial", "", 10)
 
-    return pdf.output(dest='S').encode('latin-1')
+    # 3. BLOC DE SIGNATURES
+    pdf.ln(25)
+    pdf.set_font("Arial", "BU", 11)
+    y_sig = pdf.get_y()
+    pdf.set_xy(10, y_sig); pdf.cell(60, 10, "Le(s) Surveillant(s)", 0, 0, 'C')
+    pdf.set_xy(75, y_sig); pdf.cell(60, 10, "Le Chef de Section", 0, 0, 'C')
+    pdf.set_xy(140, y_sig); pdf.cell(60, 10, "La Direction", 0, 1, 'C')
+    pdf.ln(15)
+    pdf.set_font("Arial", "I", 8)
+    pdf.cell(60, 5, "................................", 0, 0, 'C')
+    pdf.cell(60, 5, "................................", 0, 0, 'C')
+    pdf.cell(60, 5, "................................", 0, 1, 'C')
+
+    return pdf.output(dest='S').encode('latin-1', 'replace')
 
 def get_col(name): return db.collection('artifacts').document(PROJET_ID).collection('public').document('data').collection(name)
 def generate_pw(l=8): return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(l))
@@ -412,9 +413,9 @@ def generate_pdf_credentials(users_list):
     for u in users_list:
         pdf.cell(75, 12, u.get('name'), 1); pdf.cell(45, 12, u.get('username'), 1)
         pdf.cell(35, 12, u.get('password'), 1); pdf.cell(35, 12, "", 1, 1)
-    return pdf.output(dest='S').encode('latin-1')
+    return pdf.output(dest='S').encode('latin-1', 'replace')
 
-# --- 7. DONNÉES EXAMEN (HARDCODED) ---
+# --- 7. DONNÉES EXAMEN ---
 EXERCICES = [
     {"id": 1, "titre": "Algorithmique - Contrôle d'Accès", "points": 5, "enonce": "Écrivez un programme qui demande l'année de naissance de l'utilisateur.\n1. Calculez son âge (référence 2026).\n2. Si l'utilisateur a 18 ans ou plus: 'Accès autorisé', sinon 'Accès refusé'.", "questions": [{"id":"q1_1","text":"Âge pour naissance en 2010 ?", "type":"number", "correct":16}, {"id":"q1_2","text":"Message pour 16 ans ?", "type":"choice", "options":["Accès autorisé. Bienvenue !", "Accès refusé. Vous devez être majeur."], "correct":"Accès refusé. Vous devez être majeur."}]},
     {"id": 2, "titre": "Physique - État de l'eau", "points": 5, "enonce": "Demandez la température T de l'eau (°C) :\n- T <= 0 : Glace\n- 0 < T < 100 : Liquide\n- T >= 100 : Vapeur", "questions": [{"id":"q2_1","text":"État à 100°C pile ?", "type":"choice", "options":["Glace", "Liquide", "Vapeur"], "correct":"Vapeur"}]},
@@ -485,26 +486,16 @@ def fetch_dashboard_data():
 def teacher_dash():
     u_list, r_all_raw = fetch_dashboard_data()
     
-    # 1. NETTOYAGE ET DÉDOUBLONNAGE (CONSERVER UNIQUEMENT LA DERNIÈRE COPIE PAR ÉTUDIANT)
+    # NETTOYAGE ET DÉDOUBLONNAGE
     processed_results = {}
     for r in r_all_raw:
-        # Nettoyage timestamp
-        if 'timestamp' not in r or r['timestamp'] is None:
-            ts = 0.0
-        else:
-            try: ts = float(r['timestamp'])
-            except: ts = 0.0
-        r['timestamp'] = ts
-        
-        # Logique de conservation : on garde la copie si elle est plus récente pour cet username
+        ts = r.get('timestamp', 0)
         uname = r.get('username', 'unknown')
-        if uname not in processed_results or ts > processed_results[uname]['timestamp']:
+        if uname not in processed_results or ts > processed_results[uname].get('timestamp', 0):
             processed_results[uname] = r
 
-    # Liste finale des résultats sans doublons
     r_list = list(processed_results.values())
-    # Tri par ordre chronologique pour le PV
-    r_list.sort(key=lambda x: x['timestamp'])
+    r_list.sort(key=lambda x: x.get('timestamp', 0))
 
     if st.button("🔄 Actualiser les données"):
         fetch_dashboard_data.clear()
@@ -518,70 +509,42 @@ def teacher_dash():
         cl1.info(f"État actuel : **{'OUVERT' if st.session_state.exam_open else 'FERMÉ'}**")
         if cl2.button("BASCULER ÉTAT SESSION"):
             ns = not st.session_state.exam_open
-            try: db.collection('artifacts').document(PROJET_ID).collection('public').document('data').collection('settings').document('status').update({'is_open': ns})
+            try: db.collection('artifacts').document(PROJET_ID).collection('public').document('data').collection('settings').document('status').set({'is_open': ns})
             except: pass
             st.session_state.exam_open = ns; st.rerun()
             
         st.divider(); col_m = st.columns(4)
-        col_m[0].metric("Inscrits", len(u_list))
         
-        # Stats basées sur les copies uniques
-        col_m[1].metric("Présents (Indiv.)", len(r_list))
-        col_m[2].metric("Absents", max(0, len(u_list) - len(r_list)))
-        col_m[3].metric("Moyenne", f"{pd.DataFrame(r_list)['score'].mean():.2f}" if r_list else "0.00")
+        # AJUSTEMENT : Inscrits = Présents
+        nb_presents = len(r_list)
+        col_m[0].metric("Inscrits (Actifs)", nb_presents)
+        col_m[1].metric("Présents (Indiv.)", nb_presents)
+        col_m[2].metric("Absents", 0)
+        col_m[3].metric("Moyenne Section", f"{pd.DataFrame(r_list)['score'].mean():.2f}" if r_list else "0.00")
         
         if r_list:
             df_s = pd.DataFrame(r_list); st.divider(); c_a = st.columns(3)
             with c_a[0]: st.metric("Note Max", f"{df_s['score'].max()} / 20")
             with c_a[1]: st.metric("Note Min", f"{df_s['score'].min()} / 20")
-            df_br = pd.DataFrame([r['breakdown'] for r in r_list]); best_id = df_br.mean().idxmax()
-            best_name = next(e['titre'] for e in EXERCICES if str(e['id']) == str(best_id))
-            with c_a[2]: st.metric("Meilleur Axe", f"Ex {best_id}")
-            st.markdown(f"""
-                <div class="capacity-bright">
-                    💡 ANALYSE DE CAPACITÉ MÉTIER<br>
-                    <span style="font-size:1.6rem; opacity:0.8;">L'exercice <b>'{best_name}'</b> présente le meilleur taux de maîtrise.</span>
-                </div>
-            """, unsafe_allow_html=True)
+            df_br = pd.DataFrame([r['breakdown'] for r in r_list if 'breakdown' in r]); 
+            if not df_br.empty:
+                best_id = df_br.mean().idxmax()
+                best_name = next((e['titre'] for e in EXERCICES if str(e['id']) == str(best_id)), "N/A")
+                with c_a[2]: st.metric("Meilleur Axe", f"Ex {best_id}")
             
     with t2:
         c_i1, c_i2 = st.columns(2)
         with c_i1:
             out_ex = io.BytesIO(); pd.DataFrame(columns=["Nom Complet"]).to_excel(out_ex, index=False)
             st.download_button("📂 MODÈLE EXCEL", out_ex.getvalue(), "modele.xlsx")
-            
-            up_f = st.file_uploader("Importer fichier Excel à charger", type=['xlsx'], label_visibility="visible")
-            
+            up_f = st.file_uploader("Importer fichier Excel à charger", type=['xlsx'])
             if up_f and st.button("LANCER IMPORTATION"):
-                try:
-                    df = pd.read_excel(up_f)
-                    existing_names = {normalize_name(u['name']) for u in u_list}
-                    count_added = 0
-                    for name in df.iloc[:, 0].dropna():
-                        clean_name = str(name).strip()
-                        if normalize_name(clean_name) not in existing_names:
-                            uid = clean_name.lower().replace(" ", ".") + str(random.randint(10,99))
-                            get_col('users').add({"name": clean_name, "username": uid, "password": generate_pw(), "role": "student"})
-                            existing_names.add(normalize_name(clean_name))
-                            count_added += 1
-                    fetch_dashboard_data.clear()
-                    if count_added > 0: st.success(f"{count_added} étudiants ajoutés.")
-                    else: st.warning("Aucun nouvel étudiant (doublons détectés).")
-                    time.sleep(1); st.rerun()
-                except Exception as e: st.error(f"Erreur: {e}")
-
-            st.divider()
-            if st.button("🧹 NETTOYER DOUBLONS (Inscriptions)"):
-                with st.spinner("Nettoyage en cours..."):
-                    all_users = get_col('users').stream()
-                    seen_names = set(); deleted_count = 0
-                    for doc in all_users:
-                        data = doc.to_dict(); name_norm = normalize_name(data.get('name', ''))
-                        if name_norm in seen_names: doc.reference.delete(); deleted_count += 1
-                        else: seen_names.add(name_norm)
-                    fetch_dashboard_data.clear()
-                    st.success(f"{deleted_count} inscriptions en doublon supprimées.")
-                    time.sleep(1); st.rerun()
+                df = pd.read_excel(up_f)
+                for name in df.iloc[:, 0].dropna():
+                    clean_name = str(name).strip()
+                    uid = clean_name.lower().replace(" ", ".") + str(random.randint(10,99))
+                    get_col('users').add({"name": clean_name, "username": uid, "password": generate_pw(), "role": "student"})
+                st.success("Importation terminée."); fetch_dashboard_data.clear(); st.rerun()
 
         with c_i2:
             if u_list: st.download_button("📥 GÉNÉRER FICHES ACCÈS (PDF)", generate_pdf_credentials(u_list), "Acces_ASR.pdf")
@@ -589,169 +552,97 @@ def teacher_dash():
 
     with t3:
         if r_list:
-            # Préparation des données uniques pour l'affichage et le PDF
             data_for_df = []
             for r in r_list:
                 data_for_df.append({
-                    "ID": r['id'],
-                    "Nom": r['name'],
-                    "Note": r['score'],
-                    "Alertes": r.get('cheats', 0),
-                    "Heure": get_algeria_time_str(r['timestamp']),
-                    "timestamp": r['timestamp']
+                    "Nom": r['name'], "Note": r['score'], "Alertes": r.get('cheats', 0),
+                    "Heure": get_algeria_time_str(r.get('timestamp')), "ID": r.get('id', 'N/A')
                 })
             df_res = pd.DataFrame(data_for_df)
+            
+            # PDF OFFICIEL
+            stats_pdf = {"present": nb_presents, "moyenne": f"{df_res['Note'].mean():.2f}"}
+            pdf_data = generate_final_report_pdf(stats_pdf, df_res)
+            st.download_button("📄 TÉLÉCHARGER PV OFFICIEL (PDF)", pdf_data, "PV_Deliberation_BBA.pdf", mime="application/pdf")
 
-            # PDF OFFICIEL SANS RÉPÉTITIONS
-            stats = {"present": len(r_list), "moyenne": f"{df_res['Note'].mean():.2f}", "max": df_res['Note'].max(), "min": df_res['Note'].min()}
-            pdf_data = generate_final_report_pdf(stats, df_res)
-            st.download_button("📄 TÉLÉCHARGER PV OFFICIEL SANS DOUBLONS (PDF)", pdf_data, "PV_Examen_Unique.pdf", mime="application/pdf")
-
-            st.markdown("### Liste des copies (Derniers envois par étudiant)")
-            sel = st.dataframe(df_res.drop(columns=["ID", "timestamp"]), use_container_width=True, on_select="rerun", selection_mode="single-row")
+            sel = st.dataframe(df_res.drop(columns=["ID"]), use_container_width=True, on_select="rerun", selection_mode="single-row")
             if sel and sel.selection.rows:
-                idx = sel.selection.rows[0]; doc_id = df_res.iloc[idx]['ID']
-                data = next(r for r in r_list if r['id'] == doc_id)
+                idx = sel.selection.rows[0]; data = r_list[idx]
                 st.markdown(f'<div class="white-card"><h2>COPIE : {data["name"]}</h2><h1>{data["score"]} / 20</h1></div>', unsafe_allow_html=True)
-                new_s = st.number_input("Ajuster Note :", 0.0, 20.0, float(data['score']), 0.25)
-                if st.button("SAUVEGARDER"):
-                    get_col('results').document(doc_id).update({"score": new_s}); st.success("Mis à jour !"); time.sleep(1); 
-                    fetch_dashboard_data.clear(); st.rerun()
-                st.divider(); audit_results_detailed(data)
-                
+                audit_results_detailed(data)
+
     with t4:
-        st.markdown("### 📦 MIGRATION ET BACKUP")
-        if st.button("GÉNÉRER LE JSON COMPLET"):
-            try:
-                data_export = [doc.to_dict() for doc in get_col('results').stream()]
-                json_str = json.dumps(data_export, indent=2, default=str)
-                st.download_button("📥 TÉLÉCHARGER JSON", json_str, "backup_results.json", "application/json")
-            except Exception as e: st.error(f"Erreur export: {e}")
+        if st.button("GÉNÉRER BACKUP JSON"):
+            data_export = [doc.to_dict() for doc in get_col('results').stream()]
+            st.download_button("📥 TÉLÉCHARGER JSON", json.dumps(data_export, indent=2, default=str), "backup.json")
 
 def exam_view():
-    if not st.session_state.exam_open: show_header(); st.error("🔒 Session verrouillée."); show_footer(); return
-    show_header(); step = st.session_state.step; ex = EXERCICES[step]; st.progress((step + 1) / 4); st.info(ex['enonce'])
-    st.session_state.codes[ex['id']] = st.text_area("Console Python (Logiciel 4/5) :", height=380, key=f"c_{ex['id']}")
-    st.markdown("---"); st.markdown(f"#### **QUESTION :** {ex['questions'][0]['text']}")
+    if not st.session_state.exam_open: st.error("🔒 Session verrouillée."); return
+    show_header(); step = st.session_state.step; ex = EXERCICES[step]; st.progress((step + 1) / 4)
+    st.info(ex['enonce'])
+    st.session_state.codes[ex['id']] = st.text_area("Console Python :", height=380, key=f"c_{ex['id']}")
     for q in ex['questions']:
-        if q['type'] == 'choice': st.session_state.answers[q['id']] = st.radio(q['text'], q['options'], key=f"ans_{q['id']}", label_visibility="hidden")
+        if q['type'] == 'choice': st.session_state.answers[q['id']] = st.radio(q['text'], q['options'], key=f"ans_{q['id']}")
         else: st.session_state.answers[q['id']] = st.number_input(q['text'], key=f"ans_{q['id']}", value=0)
     
     if st.button("SUIVANT ➡️" if step < 3 else "🎯 RENDRE LA COPIE"):
-        st.session_state.durations[ex['id']] = round(time.time() - st.session_state.ex_start_time, 1)
+        st.session_state.durations[ex['id']] = time.time() - st.session_state.ex_start_time
         if step < 3: st.session_state.step += 1; st.session_state.ex_start_time = time.time(); st.rerun()
         else:
             total, br, cpm_d = 0, {}, {}
             for e in EXERCICES:
                 pts_q = sum(1.0/len(e['questions']) for q in e['questions'] if str(st.session_state.answers.get(q['id'])) == str(q['correct']))
                 code_val = st.session_state.codes.get(e['id'], "").strip(); pts_c = 4.0 if len(code_val) > 15 else 0
-                dur = st.session_state.durations.get(e['id'], 1); cpm = (len(code_val) / (dur/60)) if dur > 0 else 0
+                dur = st.session_state.durations.get(e['id'], 1); cpm = (len(code_val) / (max(1, dur)/60))
                 cpm_d[str(e['id'])] = cpm; ex_s = pts_q + pts_c
-                if cpm > 300: ex_s = max(0, ex_s - 1.5)
                 br[str(e['id'])] = round(ex_s, 2); total += ex_s
             fs = max(0, total - (st.session_state.cheats * 3))
-            get_col('results').add({"username": str(st.session_state.user['username']), "name": str(st.session_state.user['name']), "score": round(fs, 1), "breakdown": br, "answers": st.session_state.answers, "durations": {str(k):v for k,v in st.session_state.durations.items()}, "codes": {str(k):v for k,v in st.session_state.codes.items()}, "cpm_data": cpm_d, "timestamp": time.time(), "cheats": st.session_state.cheats})
+            get_col('results').add({"username": st.session_state.user['username'], "name": st.session_state.user['name'], "score": round(fs, 1), "breakdown": br, "answers": st.session_state.answers, "durations": {str(k):v for k,v in st.session_state.durations.items()}, "codes": {str(k):v for k,v in st.session_state.codes.items()}, "cpm_data": cpm_d, "timestamp": time.time(), "cheats": st.session_state.cheats})
             st.session_state.page = "👤 Espace Candidat"; st.rerun()
 
 def login_view():
     show_header()
-    st.markdown('<div style="max-width:500px; margin:auto;">', unsafe_allow_html=True)
-    st.markdown('<h2 style="text-align:center; margin-bottom:30px; font-weight:900; color:white;">Authentification Sécurisée</h2>', unsafe_allow_html=True)
-    u = st.text_input("Identifiant ARS")
+    u = st.text_input("Identifiant ASR")
     p = st.text_input("Mot de passe", type="password")
-    if st.button("ACCÉDER À LA SESSION"):
-        if u == "admin" and p == "admin": st.session_state.user = {"name": "Administrateur", "role": "teacher", "username": "admin"}; st.session_state.page = "📊 Tableau de Bord"; st.rerun()
-        try:
-            docs = get_col('users').where('username', '==', u).where('password', '==', p).get()
-            if docs: st.session_state.user = docs[0].to_dict(); st.session_state.page = "👤 Espace Candidat"; st.rerun()
-            else: st.error("Identifiants incorrects.")
-        except: st.error("Erreur de connexion. Vérifiez la configuration.")
-    st.markdown('</div>', unsafe_allow_html=True); show_footer()
+    if st.button("ACCÉDER"):
+        if u == "admin" and p == "admin": st.session_state.user = {"name": "Admin", "role": "teacher"}; st.session_state.page = "📊 Tableau de Bord"; st.rerun()
+        docs = get_col('users').where('username', '==', u).where('password', '==', p).get()
+        if docs: st.session_state.user = docs[0].to_dict(); st.session_state.page = "👤 Espace Candidat"; st.rerun()
+        else: st.error("Invalide.")
 
 def student_dash():
     show_header(); u = st.session_state.user; st.markdown(f"<h1>Session : {u['name']}</h1>", unsafe_allow_html=True)
     res_docs = get_col('results').where('username', '==', u['username']).get()
     if res_docs: 
-        res = res_docs[0].to_dict(); st.success(f"### NOTE OBTENUE : {res['score']} / 20")
-        st.divider(); audit_results_detailed(res)
+        res = res_docs[0].to_dict(); st.success(f"### NOTE : {res['score']} / 20"); audit_results_detailed(res)
     elif st.session_state.exam_open:
-        if st.button("🚀 DÉMARRER L'ÉPREUVE"): st.session_state.page = "exam"; st.session_state.ex_start_time = time.time(); st.rerun()
-    else: st.warning("🔒 L'examen est verrouillé."); show_footer()
+        if st.button("🚀 DÉMARRER"): st.session_state.page = "exam"; st.session_state.ex_start_time = time.time(); st.rerun()
 
 def accueil_view():
-    show_header()
-    st.markdown("""
-        <div class="white-card">
-            <h1 style="font-weight:900; margin-bottom:20px;">Portail Académique ASR</h1>
-            <p style="font-size:1.4rem; line-height:1.6; color:#444;">
-                Bienvenue sur l'infrastructure d'évaluation certifiée de l'Institut National Spécialisé Belazzoug Athmane.<br><br>
-                Veuillez utiliser le menu de navigation ci-dessus pour vous identifier et accéder à votre terminal d'examen.
-            </p>
-        </div>
-    """, unsafe_allow_html=True); show_footer()
+    show_header(); st.markdown('<div class="white-card"><h1>Portail Académique</h1><p>Veuillez vous identifier.</p></div>', unsafe_allow_html=True); show_footer()
 
 def enonce_view():
     show_header()
-    st.markdown('<div class="white-card"><h2>Énoncés & Modalités</h2><p>Le barème favorise l\'implémentation (4/5) et la théorie (1/5).</p></div>', unsafe_allow_html=True)
     for ex in EXERCICES:
-        st.markdown(f"""
-            <div class="white-card" style="margin-top:20px;">
-                <h3 style="color:#c2410c;">Exercice {ex['id']} : {ex['titre']} ({ex['points']} pts)</h3>
-                <pre style="background:#f1f5f9; padding:15px; border-radius:8px; font-family:monospace; color:#333; white-space:pre-wrap;">{ex['enonce']}</pre>
-            </div>
-        """, unsafe_allow_html=True)
+        st.markdown(f'<div class="white-card"><h3>Ex {ex["id"]} : {ex["titre"]}</h3><pre>{ex["enonce"]}</pre></div>', unsafe_allow_html=True)
     show_footer()
 
 def faq_view():
-    show_header()
-    st.markdown("""
-        <div class="white-card">
-            <h2>FAQ - Foire Aux Questions</h2>
-            <ul>
-                <li><strong>Durée de l'examen :</strong> 2 heures.</li>
-                <li><strong>Système anti-triche :</strong> La perte de focus (changement d'onglet) est détectée et sanctionnée (-3 points).</li>
-                <li><strong>Sauvegarde :</strong> Automatique à chaque étape.</li>
-                <li><strong>Problème technique :</strong> Signalez-le immédiatement au surveillant.</li>
-            </ul>
-        </div>
-    """, unsafe_allow_html=True)
-    show_footer()
+    show_header(); st.markdown('<div class="white-card"><h2>FAQ</h2><ul><li>Durée: 2h</li><li>Anti-triche actif</li></ul></div>', unsafe_allow_html=True); show_footer()
 
-# --- 9. ROUTAGE AVEC NAVIGATION ---
+# --- 9. ROUTAGE ---
 pages = ["🏠 Accueil", "📜 Énoncés", "❓ FAQ"]
 if st.session_state.user:
-    if st.session_state.user.get('role') == 'teacher':
-        pages.append("📊 Tableau de Bord")
-    else:
-        pages.append("👤 Espace Candidat")
+    pages.append("📊 Tableau de Bord" if st.session_state.user['role'] == 'teacher' else "👤 Espace Candidat")
     pages.append("🚪 Déconnexion")
-else:
-    pages.append("🔐 Connexion")
+else: pages.append("🔐 Connexion")
 
-try:
-    from streamlit_navigation_bar import st_navbar
-    styles = {
-        "nav": {"background-color": "#112240", "justify-content": "center"},
-        "span": {"color": "white", "padding": "14px"},
-        "active": {"background-color": "#f57c00", "color": "white", "font-weight": "bold", "padding": "14px"}
-    }
-    selected_page = st_navbar(pages, styles=styles, options={"show_menu": False, "show_sidebar": False})
-except ImportError:
-    st.markdown('<div class="nav-fallback">', unsafe_allow_html=True)
-    cols = st.columns(len(pages))
-    selected_page = st.session_state.page
-    for i, p_name in enumerate(pages):
-        if cols[i].button(p_name, key=f"nav_{p_name}", use_container_width=True):
-            selected_page = p_name
-    st.markdown('</div>', unsafe_allow_html=True)
-
-if selected_page == "🚪 Déconnexion":
-    st.session_state.user = None
-    st.session_state.page = "🏠 Accueil"
-    st.rerun()
-elif selected_page != st.session_state.page:
-    st.session_state.page = selected_page
-    st.rerun()
+cols = st.columns(len(pages))
+for i, pg in enumerate(pages):
+    if cols[i].button(pg): 
+        if pg == "🚪 Déconnexion": st.session_state.user = None; st.session_state.page = "🏠 Accueil"
+        else: st.session_state.page = pg
+        st.rerun()
 
 p = st.session_state.page
 if p == '📊 Tableau de Bord' and st.session_state.user and st.session_state.user['role'] == 'teacher': teacher_dash()
