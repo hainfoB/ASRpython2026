@@ -486,16 +486,33 @@ def fetch_dashboard_data():
 def teacher_dash():
     u_list, r_all_raw = fetch_dashboard_data()
     
-    # NETTOYAGE ET DÉDOUBLONNAGE
+    # NETTOYAGE ET DÉDOUBLONNAGE AVEC FIX TYPEERROR
     processed_results = {}
     for r in r_all_raw:
-        ts = r.get('timestamp', 0)
+        # Sécurisation du timestamp (évite NoneType comparison)
+        raw_ts = r.get('timestamp')
+        try:
+            ts = float(raw_ts) if raw_ts is not None else 0.0
+        except (ValueError, TypeError):
+            ts = 0.0
+            
         uname = r.get('username', 'unknown')
-        if uname not in processed_results or ts > processed_results[uname].get('timestamp', 0):
+        
+        # Récupération sécurisée du timestamp existant dans le dictionnaire
+        if uname in processed_results:
+            try:
+                existing_ts = float(processed_results[uname].get('timestamp', 0.0))
+            except:
+                existing_ts = 0.0
+        else:
+            existing_ts = -1.0 # Pour forcer l'ajout au premier passage
+
+        if uname not in processed_results or ts > existing_ts:
             processed_results[uname] = r
 
     r_list = list(processed_results.values())
-    r_list.sort(key=lambda x: x.get('timestamp', 0))
+    # Tri sécurisé par timestamp
+    r_list.sort(key=lambda x: float(x.get('timestamp', 0)) if x.get('timestamp') is not None else 0.0)
 
     if st.button("🔄 Actualiser les données"):
         fetch_dashboard_data.clear()
