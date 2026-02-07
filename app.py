@@ -358,7 +358,7 @@ def generate_final_report_pdf(stats, results_df):
     pdf.set_font("Arial", "B", 12)
     pdf.cell(0, 10, "1. STATISTIQUES DE LA SESSION", 0, 1)
     pdf.set_font("Arial", "", 11)
-    pdf.cell(90, 10, f"Copies Rendues: {stats['present']}", 1)
+    pdf.cell(90, 10, f"Presents (Indiv.): {stats['present']}", 1)
     pdf.cell(90, 10, f"Moyenne de Section: {stats['moyenne']}/20", 1, 1)
     pdf.cell(90, 10, f"Meilleure Note: {stats['max']}/20", 1)
     pdf.cell(90, 10, f"Note Minimale: {stats['min']}/20", 1, 1)
@@ -366,7 +366,7 @@ def generate_final_report_pdf(stats, results_df):
 
     # 2. Tableau
     pdf.set_font("Arial", "B", 12)
-    pdf.cell(0, 10, "2. LISTE DETAILLEE (Par ordre d'arrivee)", 0, 1)
+    pdf.cell(0, 10, "2. LISTE DETAILLEE (Copies uniques retenues)", 0, 1)
     
     # Header
     pdf.set_fill_color(220, 220, 220)
@@ -483,19 +483,27 @@ def fetch_dashboard_data():
     return [{"id": u.id, **u.to_dict()} for u in u_docs], [{"id": r.id, **r.to_dict()} for r in r_docs]
 
 def teacher_dash():
-    u_list, r_list = fetch_dashboard_data()
+    u_list, r_all_raw = fetch_dashboard_data()
     
-    # NETTOYAGE DES DONNÉES AVANT TRI (Prévention absolue du crash)
-    for r in r_list:
+    # 1. NETTOYAGE ET DÉDOUBLONNAGE (CONSERVER UNIQUEMENT LA DERNIÈRE COPIE PAR ÉTUDIANT)
+    processed_results = {}
+    for r in r_all_raw:
+        # Nettoyage timestamp
         if 'timestamp' not in r or r['timestamp'] is None:
-            r['timestamp'] = 0.0
+            ts = 0.0
         else:
-            try:
-                r['timestamp'] = float(r['timestamp'])
-            except:
-                r['timestamp'] = 0.0
+            try: ts = float(r['timestamp'])
+            except: ts = 0.0
+        r['timestamp'] = ts
+        
+        # Logique de conservation : on garde la copie si elle est plus récente pour cet username
+        uname = r.get('username', 'unknown')
+        if uname not in processed_results or ts > processed_results[uname]['timestamp']:
+            processed_results[uname] = r
 
-    # TRI SÉCURISÉ (Par ordre d'arrivée croissant)
+    # Liste finale des résultats sans doublons
+    r_list = list(processed_results.values())
+    # Tri par ordre chronologique pour le PV
     r_list.sort(key=lambda x: x['timestamp'])
 
     if st.button("🔄 Actualiser les données"):
@@ -517,10 +525,9 @@ def teacher_dash():
         st.divider(); col_m = st.columns(4)
         col_m[0].metric("Inscrits", len(u_list))
         
-        # Correction pour afficher les présents réels sans doublons pour la stat
-        unique_usernames = set(r.get('username') for r in r_list)
-        col_m[1].metric("Présents (Indiv.)", len(unique_usernames))
-        col_m[2].metric("Absents", max(0, len(u_list) - len(unique_usernames)))
+        # Stats basées sur les copies uniques
+        col_m[1].metric("Présents (Indiv.)", len(r_list))
+        col_m[2].metric("Absents", max(0, len(u_list) - len(r_list)))
         col_m[3].metric("Moyenne", f"{pd.DataFrame(r_list)['score'].mean():.2f}" if r_list else "0.00")
         
         if r_list:
@@ -548,10 +555,8 @@ def teacher_dash():
             if up_f and st.button("LANCER IMPORTATION"):
                 try:
                     df = pd.read_excel(up_f)
-                    # ANTI-DOUBLONS A L'IMPORT
                     existing_names = {normalize_name(u['name']) for u in u_list}
                     count_added = 0
-                    
                     for name in df.iloc[:, 0].dropna():
                         clean_name = str(name).strip()
                         if normalize_name(clean_name) not in existing_names:
@@ -559,33 +564,24 @@ def teacher_dash():
                             get_col('users').add({"name": clean_name, "username": uid, "password": generate_pw(), "role": "student"})
                             existing_names.add(normalize_name(clean_name))
                             count_added += 1
-                    
                     fetch_dashboard_data.clear()
                     if count_added > 0: st.success(f"{count_added} étudiants ajoutés.")
                     else: st.warning("Aucun nouvel étudiant (doublons détectés).")
                     time.sleep(1); st.rerun()
                 except Exception as e: st.error(f"Erreur: {e}")
 
-            # --- BOUTON SUPPRESSION DOUBLONS ---
             st.divider()
-            if st.button("🧹 NETTOYER DOUBLONS (Nom)"):
+            if st.button("🧹 NETTOYER DOUBLONS (Inscriptions)"):
                 with st.spinner("Nettoyage en cours..."):
                     all_users = get_col('users').stream()
-                    seen_names = set()
-                    deleted_count = 0
+                    seen_names = set(); deleted_count = 0
                     for doc in all_users:
-                        data = doc.to_dict()
-                        name_norm = normalize_name(data.get('name', ''))
-                        if name_norm in seen_names:
-                            doc.reference.delete()
-                            deleted_count += 1
-                        else:
-                            seen_names.add(name_norm)
-                    
+                        data = doc.to_dict(); name_norm = normalize_name(data.get('name', ''))
+                        if name_norm in seen_names: doc.reference.delete(); deleted_count += 1
+                        else: seen_names.add(name_norm)
                     fetch_dashboard_data.clear()
-                    st.success(f"{deleted_count} doublons supprimés avec succès.")
-                    time.sleep(2)
-                    st.rerun()
+                    st.success(f"{deleted_count} inscriptions en doublon supprimées.")
+                    time.sleep(1); st.rerun()
 
         with c_i2:
             if u_list: st.download_button("📥 GÉNÉRER FICHES ACCÈS (PDF)", generate_pdf_credentials(u_list), "Acces_ASR.pdf")
@@ -593,33 +589,29 @@ def teacher_dash():
 
     with t3:
         if r_list:
-            # Création du DataFrame avec heure algérienne
+            # Préparation des données uniques pour l'affichage et le PDF
             data_for_df = []
             for r in r_list:
-                ts = r.get('timestamp', 0.0)
                 data_for_df.append({
                     "ID": r['id'],
                     "Nom": r['name'],
                     "Note": r['score'],
                     "Alertes": r.get('cheats', 0),
-                    "Heure": get_algeria_time_str(ts),
-                    "timestamp": ts
+                    "Heure": get_algeria_time_str(r['timestamp']),
+                    "timestamp": r['timestamp']
                 })
             df_res = pd.DataFrame(data_for_df)
-            df_res = df_res.sort_values(by='timestamp', ascending=True)
 
-            # PDF OFFICIEL
+            # PDF OFFICIEL SANS RÉPÉTITIONS
             stats = {"present": len(r_list), "moyenne": f"{df_res['Note'].mean():.2f}", "max": df_res['Note'].max(), "min": df_res['Note'].min()}
             pdf_data = generate_final_report_pdf(stats, df_res)
-            st.download_button("📄 TÉLÉCHARGER PV OFFICIEL DÉTAILLÉ (PDF)", pdf_data, "PV_Examen_Complet.pdf", mime="application/pdf")
+            st.download_button("📄 TÉLÉCHARGER PV OFFICIEL SANS DOUBLONS (PDF)", pdf_data, "PV_Examen_Unique.pdf", mime="application/pdf")
 
-            st.markdown("### Liste des copies (Ordre d'arrivée)")
+            st.markdown("### Liste des copies (Derniers envois par étudiant)")
             sel = st.dataframe(df_res.drop(columns=["ID", "timestamp"]), use_container_width=True, on_select="rerun", selection_mode="single-row")
             if sel and sel.selection.rows:
-                idx = sel.selection.rows[0]
-                doc_id = df_res.iloc[idx]['ID']
+                idx = sel.selection.rows[0]; doc_id = df_res.iloc[idx]['ID']
                 data = next(r for r in r_list if r['id'] == doc_id)
-
                 st.markdown(f'<div class="white-card"><h2>COPIE : {data["name"]}</h2><h1>{data["score"]} / 20</h1></div>', unsafe_allow_html=True)
                 new_s = st.number_input("Ajuster Note :", 0.0, 20.0, float(data['score']), 0.25)
                 if st.button("SAUVEGARDER"):
@@ -628,54 +620,12 @@ def teacher_dash():
                 st.divider(); audit_results_detailed(data)
                 
     with t4:
-        st.markdown("### 📦 MIGRATION DE SECOURS (Extraction Totale)")
-        st.info("Ce bouton scanne toutes les sources possibles pour récupérer même les données des anciennes versions.")
-        
-        if st.button("GÉNÉRER LE JSON COMPLET (TOUTES SOURCES)"):
+        st.markdown("### 📦 MIGRATION ET BACKUP")
+        if st.button("GÉNÉRER LE JSON COMPLET"):
             try:
-                data_export = []
-                ids_seen = set()
-                sources_found = []
-
-                # 1. Source: Canvas Standard (Nested)
-                try:
-                    docs_nested = get_col('results').stream()
-                    count_nested = 0
-                    for doc in docs_nested:
-                        if doc.id not in ids_seen:
-                            d = doc.to_dict(); d['id'] = doc.id; d['_source'] = 'nested'
-                            data_export.append(d); ids_seen.add(doc.id)
-                            count_nested += 1
-                    if count_nested > 0: sources_found.append(f"Canvas ({count_nested})")
-                except: pass
-
-                # 2. Source: Root Collection 'results' (Legacy V1)
-                try:
-                    docs_root = db.collection('results').stream()
-                    count_root = 0
-                    for doc in docs_root:
-                        if doc.id not in ids_seen:
-                            d = doc.to_dict(); d['id'] = doc.id; d['_source'] = 'root'
-                            data_export.append(d); ids_seen.add(doc.id)
-                            count_root += 1
-                    if count_root > 0: sources_found.append(f"Racine DB ({count_root})")
-                except: pass
-
-                # 3. Processing
-                final_clean_data = []
-                for d in data_export:
-                    ts_val = d.get('timestamp', 0.0)
-                    try: d['timestamp'] = float(ts_val)
-                    except: d['timestamp'] = 0.0
-                    final_clean_data.append(d)
-                
-                if not final_clean_data:
-                    st.error("❌ Aucune donnée trouvée.")
-                else:
-                    json_str = json.dumps(final_clean_data, indent=2, default=str)
-                    st.success(f"✅ {len(final_clean_data)} copies récupérées.")
-                    st.download_button("📥 TÉLÉCHARGER LE JSON GLOBAL", json_str, "backup_full_legacy.json", "application/json")
-                
+                data_export = [doc.to_dict() for doc in get_col('results').stream()]
+                json_str = json.dumps(data_export, indent=2, default=str)
+                st.download_button("📥 TÉLÉCHARGER JSON", json_str, "backup_results.json", "application/json")
             except Exception as e: st.error(f"Erreur export: {e}")
 
 def exam_view():
